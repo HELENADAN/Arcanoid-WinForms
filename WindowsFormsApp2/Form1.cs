@@ -24,6 +24,7 @@ namespace WindowsFormsApp2
         public Label score_label;
         public Label lives_lable;
         public Label pause;
+        public Label Game_over;
 
         public Image Background;
         public Label Mode_Button;
@@ -85,6 +86,17 @@ namespace WindowsFormsApp2
             Mode_Button.Click += Mode_Button_click;
             this.Controls.Add(Mode_Button);  // добавляем метки в форму --- в коллекцию элементов управления в форме
 
+            // надпись при нажатии Game_Over
+            Game_over = new Label();
+            Game_over.Location = new Point((MapController.mapWidth), (MapController.mapHeight) * 8); ;
+            Game_over.Text = "GAME OVER";
+            Game_over.Font = new Font("Times new roman", 40, FontStyle.Bold);
+            Game_over.BackgroundImage = Background;
+            Game_over.ForeColor = Color.White;
+            Game_over.AutoSize = true;
+            Game_over.Hide();
+            this.Controls.Add(Game_over);  // добавляем метки в форму --- в коллекцию элементов управления в форме
+
             //обработчик событий для элемента timer1 
             timer1.Tick += new EventHandler(update); // для движения мяча
 
@@ -128,30 +140,6 @@ namespace WindowsFormsApp2
 
         }
 
-        public void Message_box()
-        {
-            DialogResult result = MessageBox.Show(
-                   "Your result: " + player.score + "\nLet's play it again?",
-                   "Game over!",
-                    MessageBoxButtons.YesNo,
-                    MessageBoxIcon.Question,
-                    MessageBoxDefaultButton.Button1,
-                    MessageBoxOptions.DefaultDesktopOnly);
-
-
-            if (player.lives <= 0)
-            {
-                if (result == DialogResult.Yes)
-                {   
-                    Init();                 
-                }
-                else
-                {
-                    this.Close();
-                }
-            }
-        }
-
         // движение мячика
         public void update(object sender, EventArgs e)
         {
@@ -160,10 +148,15 @@ namespace WindowsFormsApp2
             {
                 player.lives--; // коснулись нижней части платформы -жизнь
                 if (player.lives <= 0)
-                    Message_box();
-                   // Init();                              
-                else 
-                  Continue();
+                {
+                    timer1.Stop();
+                    Init();
+                    Game_over.Show();                                                  
+                }
+                //                              
+                else
+                    
+                    Continue();
             }
             //очищаем предыдущее место
             map.map[player.BallY, player.BallX] = 0;
@@ -195,6 +188,7 @@ namespace WindowsFormsApp2
 
             if (Mode_Button.Text == "▶")
             {
+                Game_over.Hide();
                 Mode_Button.Text = "⏸";
                 pause.Hide();
                 // место размещения мяча на карте
@@ -204,13 +198,13 @@ namespace WindowsFormsApp2
                 timer1.Start();
             }
 
-            else
-            {               
-                Mode_Button.Text = "▶";
+            else if (Mode_Button.Text == "⏸")
+            {
+                Mode_Button.Text = "▶";               
                 timer1.Stop();
                 pause.Show();
             }
-          
+
         }
 
         // генерация препятствий для мячика
@@ -279,6 +273,7 @@ namespace WindowsFormsApp2
 
             player.score = 0;
             player.lives = 5;
+            Mode_Button.Text = "▶";
             pause.Text = "PAUSE";
             ScoreLabel.Text = "Score";
             score_label.Text = player.score.ToString();
@@ -319,7 +314,7 @@ namespace WindowsFormsApp2
             player.dirY = -1;
 
             GeneratePlatform();
-
+           
         }
 
         /// отрисовка элементов
