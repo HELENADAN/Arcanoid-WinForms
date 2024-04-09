@@ -19,6 +19,7 @@ namespace WindowsFormsApp2
         MapController map;
         Player player;
         Physics2DController physics;
+        Ball ball;
 
         public Label ScoreLabel;
         public Label score_label;
@@ -144,7 +145,7 @@ namespace WindowsFormsApp2
         public void update(object sender, EventArgs e)
         {
             // столкновение с нижней частью границы ---> Игра начинается заново, если мяч коснулся нижней границы
-            if (player.BallY + player.dirY > MapController.mapHeight - 1)
+            if (ball.BallY + ball.dirY > MapController.mapHeight - 1)
             {
                 player.lives--; // коснулись нижней части платформы -жизнь
                 if (player.lives <= 0)
@@ -159,20 +160,20 @@ namespace WindowsFormsApp2
                     Continue();
             }
             //очищаем предыдущее место
-            map.map[player.BallY, player.BallX] = 0;
+            map.map[ball.BallY, ball.BallX] = 0;
             // проверка на выход из карты - массива
-            if (!physics.IsCollade(player,map,ScoreLabel, score_label))
+            if (!physics.IsCollade(player, ball, map,ScoreLabel, score_label))
             {
                 // меняем координаты
-                player.BallX += player.dirX;
+                ball.BallX += ball.dirX;
             }
-            if (!physics.IsCollade(player, map, ScoreLabel, score_label))
+            if (!physics.IsCollade(player, ball, map, ScoreLabel, score_label))
             {
                 // меняем координаты
-                player.BallY += player.dirY;
+                ball.BallY += ball.dirY;
             }
             // задаем новое место
-            map.map[player.BallY, player.BallX] = 8;
+            map.map[ball.BallY, ball.BallX] = 8;
 
             // место размещения платформы на карте
 
@@ -192,7 +193,7 @@ namespace WindowsFormsApp2
                 Mode_Button.Text = "⏸";
                 pause.Hide();
                 // место размещения мяча на карте
-                map.map[player.BallY, player.BallX] = 8;
+                map.map[ball.BallY, ball.BallX] = 8;
 
                 // запуск таймера для осуществления цикла игры
                 timer1.Start();
@@ -238,19 +239,19 @@ namespace WindowsFormsApp2
             map.map[player.platformY, player.platformX] = 9; // левый конец платформы
             map.map[player.platformY, player.platformX + 1] = 99;// средина
             map.map[player.platformY, player.platformX + 2] = 999;// правый конец платформы
-            map.map[player.BallY, player.BallX] = 0;
+            map.map[ball.BallY, ball.BallX] = 0;
 
             // задаем расположение мячика
 
-            player.BallY = player.platformY - 1; // на строчку выше платформы расположен мяч
-            player.BallX = player.platformX + 1; // мяч размещен по середине платформы
+            ball.BallY = player.platformY - 1; // на строчку выше платформы расположен мяч
+            ball.BallX = player.platformX + 1; // мяч размещен по середине платформы
 
             // место размещения мяча на карте
-            map.map[player.BallY, player.BallX] = 8;
+            map.map[ball.BallY, ball.BallX] = 8;
 
             // реализация движения мячика
-            player.dirX = 1;
-            player.dirY = -1;
+            ball.dirX = 1;
+            ball.dirY = -1;
 
             // запуск таймера для осуществления цикла игры
             timer1.Start();
@@ -261,6 +262,7 @@ namespace WindowsFormsApp2
         {
 
             map = new MapController(); // создадим новый объект класса MapController
+            ball = new Ball();
             player = new Player();
             physics = new Physics2DController();
 
@@ -306,12 +308,12 @@ namespace WindowsFormsApp2
 
             // задаем расположение мячика
 
-            player.BallY = player.platformY - 1; // на строчку выше платформы расположен мяч
-            player.BallX = player.platformX + 1; // мяч размещен по середине платформы
+            ball.BallY = player.platformY - 1; // на строчку выше платформы расположен мяч
+            ball.BallX = player.platformX + 1; // мяч размещен по середине платформы
 
             // реализация движения мячика
-            player.dirX = 1;
-            player.dirY = -1;
+            ball.dirX = 1;
+            ball.dirY = -1;
 
             GeneratePlatform();
            
@@ -323,6 +325,7 @@ namespace WindowsFormsApp2
             map.DrawArea(e.Graphics);// рисуем границы игрового поля
             map.DrawMap(e.Graphics);// рисуем карту
         }
+
 
     }   
 }
