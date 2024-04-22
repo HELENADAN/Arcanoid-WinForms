@@ -13,11 +13,7 @@ namespace WindowsFormsApp2
         public int platformX = 0;
         public int platformY = 0;
 
-       
-
         public int score; // очки
         public int lives; // жизни
-
-
     }
 }

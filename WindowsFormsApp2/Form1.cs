@@ -16,100 +16,309 @@ namespace WindowsFormsApp2
 {   // В этом коде создается форма с игровым полем и элементами, такими как шарик и платформа. 
     public partial class Form1 : Form
     {
+
         MapController map;
         Player player;
         Physics2DController physics;
-        Ball ball;
 
-        public Label ScoreLabel;
-        public Label score_label;
-        public Label lives_lable;
-        public Label pause;
-        public Label Game_over;
+        private readonly Label ScoreLabel;
+        private readonly Label ScoreNumberLabel;
+        private readonly Label LivesLabel;
+        private readonly Label PauseMessage;
+        private readonly Label Game_over;
 
-        public Image Background;
-        public Label Mode_Button;
-       
+        private Image image = Image.FromFile("C:\\Users\\Елена\\Desktop\\Arc\\WindowsFormsApp2\\img_for_w2\\arca.jpg");
+        private readonly Label StartPauseButton;
+        private readonly Label RestartButton;
+
+        private readonly Bitmap CroppedStartButton1;
+        private readonly Bitmap CroppedPauseButton;
+        private readonly Bitmap CroppedRestartButton;
+        private readonly Bitmap CroppedEasyButton;
+        private readonly Bitmap CroppedInformButton;
+        private readonly Bitmap CroppedResaltButton;
+        private readonly Bitmap CroppedExitButton;
+
+        private readonly Label EasyLevel;
+        private readonly Label MediumLevel;
+        private readonly Label HardLevel;
+        private readonly Label EasyLevelText;
+        private readonly Label MediumLevelText;
+        private readonly Label HardLevelText;
+
+        private readonly Label InformButton;
+        private readonly Label ResaltButton;
+        private readonly Label ExitButton;
+        private Image Image { get => image; set => image = value; }
+
         // конструктор формы
         public Form1()
         {
             InitializeComponent();
-            this.KeyPreview = true;
 
             // общий фон
-            Background = new Bitmap("C:\\Users\\Елена\\Desktop\\2курс(2)\\c#\\WindowsFormsApp2\\WindowsFormsApp2\\img_for_w2\\space.bmp");
+            this.BackColor = Color.White;
 
             // надпись Score
-            ScoreLabel = new Label();
-            ScoreLabel.Location = new Point((MapController.mapWidth) * 20 + 1, 80);
-            ScoreLabel.AutoSize = true;
-            ScoreLabel.BackgroundImage = Background;
-            ScoreLabel.ForeColor = Color.White;
-            ScoreLabel.Font = new Font("Times new roman", 23, FontStyle.Bold);
+            ScoreLabel = new Label
+            {
+                Location = new Point((MapController.mapWidth) * 20 + 6, 50),
+                AutoSize = true,
+                BackColor = Color.White,
+                ForeColor = Color.Black,
+                Font = new Font("Times New Roman", 23, FontStyle.Bold)
+            };
             this.Controls.Add(ScoreLabel); // добавляем метки в форму --- в коллекцию элементов управления в форме
 
-            //сами очки
-            score_label = new Label();
-            score_label.Location = new Point((MapController.mapWidth) * 20 + 1, 117);
-            score_label.AutoSize = true;
-            score_label.BackgroundImage = Background;
-            score_label.ForeColor = Color.White;
-            score_label.Font = new Font("Times new roman", 16, FontStyle.Bold);
-            this.Controls.Add(score_label);// добавляем метки в форму --- в коллекцию элементов управления в форме
+            // количество заработанных очков
+            ScoreNumberLabel = new Label
+            {
+                Location = new Point((MapController.mapWidth) * 20 + 4, 80),
+                AutoSize = true,
+                BackColor = Color.White,
+                ForeColor = Color.Black,
+                Font = new Font("Times New Roman", 23, FontStyle.Bold)
+            };
+            this.Controls.Add(ScoreNumberLabel);// добавляем метки в форму --- в коллекцию элементов управления в форме
 
-            // heart
-            lives_lable = new Label();
-            lives_lable.Location = new Point((MapController.mapWidth) * 20 + 1, 25);
-            lives_lable.AutoSize = true;
-            lives_lable.BackgroundImage = Background;
-            lives_lable.ForeColor = Color.Red;
-            lives_lable.Font = new Font("Times new roman", 18, FontStyle.Bold);
-            this.Controls.Add(lives_lable);// добавляем метки в форму --- в коллекцию элементов управления в форме
+            // количество жизней
 
+            LivesLabel = new Label
+            {
+                Location = new Point((MapController.mapWidth) * 20 + 5, 4),
+                AutoSize = true,
+                BackColor = Color.White,
+                ForeColor = Color.Black,
+                Font = new Font("Times new roman", 30, FontStyle.Regular)
+            };
+            this.Controls.Add(LivesLabel);// добавляем метки в форму --- в коллекцию элементов управления в форме
+
+            // кнопка смены состояний START - PAUSE
+            Rectangle CroppPauseButton = new Rectangle(598, 40, 115, 115);
+            Rectangle CroppStartButton = new Rectangle(220, 40, 115, 115);
+
+            CroppedStartButton1 = CropSprite(Image, CroppStartButton);
+            CroppedPauseButton = CropSprite(Image, CroppPauseButton);
+
+            StartPauseButton = new Label
+            {
+                Location = new Point((MapController.mapWidth) * 20 + 40, 125),
+                BackgroundImage = CroppedStartButton1,
+                AutoSize = false,
+                Size = new Size(60, 60),
+                BackgroundImageLayout = ImageLayout.Stretch
+            };
+            StartPauseButton.Click += StartPauseButtonClick;
+            this.Controls.Add(StartPauseButton);
+
+            // кнопка RESTART
+
+            Rectangle CroppRestartButton = new Rectangle(415, 42, 115, 115);
+
+            CroppedRestartButton = CropSprite(Image, CroppRestartButton);
+
+            RestartButton = new Label
+            {
+                Location = new Point((MapController.mapWidth) * 20 + 40, 300),
+                BackgroundImage = CroppedRestartButton,
+                AutoSize = false,
+                Size = new Size(60, 60),
+                BackgroundImageLayout = ImageLayout.Stretch
+            };
+
+            RestartButton.Click += RestartButtonClick;
+            this.Controls.Add(RestartButton);
+
+            // кнопки Level
+
+            Rectangle CroppEasyButton = new Rectangle(604, 240, 35, 35);
+
+            CroppedEasyButton = CropSprite(Image, CroppEasyButton);
+
+            EasyLevel = new Label
+            {
+                Location = new Point((MapController.mapWidth) * 20 + 30, 215),
+                BackgroundImage = CroppedEasyButton,
+                AutoSize = false,
+                Size = new Size(20, 20),
+                BackgroundImageLayout = ImageLayout.Stretch
+            };
+            this.Controls.Add(EasyLevel);
+
+            EasyLevelText = new Label
+            {
+                Location = new Point((MapController.mapWidth) * 20 + 55, 212),
+                ForeColor = Color.Black,
+                Font = new Font("Times new roman", 14, FontStyle.Regular),
+                AutoSize = true,
+                BackColor = Color.White,
+                Text = "Easy"
+            };
+            this.Controls.Add(EasyLevelText);
+
+            MediumLevel = new Label
+            {
+                Location = new Point((MapController.mapWidth) * 20 + 30, 235),
+                BackgroundImage = CroppedEasyButton,
+                AutoSize = false,
+                Size = new Size(20, 20),
+                BackgroundImageLayout = ImageLayout.Stretch
+            };
+            this.Controls.Add(MediumLevel);
+
+            MediumLevelText = new Label
+            {
+                Location = new Point((MapController.mapWidth) * 20 + 55, 232),
+                ForeColor = Color.Black,
+                Font = new Font("Times new roman", 14, FontStyle.Regular),
+                AutoSize = true,
+                BackColor = Color.White,
+                Text = "Medium"
+            };
+            this.Controls.Add(MediumLevelText);
+
+            HardLevel = new Label
+            {
+                Location = new Point((MapController.mapWidth) * 20 + 30, 255),
+                BackgroundImage = CroppedEasyButton,
+                AutoSize = false,
+                Size = new Size(20, 20),
+                BackgroundImageLayout = ImageLayout.Stretch
+            };
+            this.Controls.Add(HardLevel);
+
+            HardLevelText = new Label
+            {
+                Location = new Point((MapController.mapWidth) * 20 + 55, 253),
+                ForeColor = Color.Black,
+                Font = new Font("Times new roman", 14, FontStyle.Regular),
+                AutoSize = true,
+                BackColor = Color.White,
+                Text = "Hard"
+            };
+            this.Controls.Add(HardLevelText);
+
+            // кнопка Справка
+
+            Rectangle CroppInformButton = new Rectangle(632, 347, 79, 112);
+
+            CroppedInformButton = CropSprite(Image, CroppInformButton);
+
+            InformButton = new Label
+            {
+                Location = new Point((MapController.mapWidth) * 20 + 95, 395),
+                BackgroundImage = CroppedInformButton,
+                AutoSize = false,
+                Size = new Size(45, 60),
+                BackgroundImageLayout = ImageLayout.Stretch
+            };
+            this.Controls.Add(InformButton);
+
+            // кнопка Результат
+
+            Rectangle CroppResaltButton = new Rectangle(395, 358, 135, 102);
+
+            CroppedResaltButton = CropSprite(Image, CroppResaltButton);
+
+            ResaltButton = new Label
+            {
+                Location = new Point((MapController.mapWidth) * 20 + 5, 395),
+                BackgroundImage = CroppedResaltButton,
+                AutoSize = false,
+                Size = new Size(80, 60),
+                BackgroundImageLayout = ImageLayout.Stretch
+            };
+            this.Controls.Add(ResaltButton);
+
+            // кнопка Выход
+
+            Rectangle CroppExitButton = new Rectangle(818, 347, 115, 115);
+
+            CroppedExitButton = CropSprite(Image, CroppExitButton);
+
+            ExitButton = new Label
+            {
+                Location = new Point((MapController.mapWidth) * 20 + 45, 500),
+                BackgroundImage = CroppedExitButton,
+                AutoSize = false,
+                Size = new Size(60, 60),
+                BackgroundImageLayout = ImageLayout.Stretch
+            };
+            this.Controls.Add(ExitButton);
             // надпись при нажатии PAUSED
-            pause = new Label();
-            pause.Location = new Point((MapController.mapWidth)*3, (MapController.mapHeight)*8);
-            pause.ForeColor = Color.White;
-            pause.Font = new Font("Times new roman", 50, FontStyle.Bold);
-            pause.AutoSize = true;
-            pause.BackgroundImage = Background;
-            pause.Hide();
-            this.Controls.Add(pause);// добавляем метки в форму --- в коллекцию элементов управления в форме
+            PauseMessage = new Label
+            {
+                Location = new Point((MapController.mapWidth) * 3, (MapController.mapHeight) * 8),
+                ForeColor = Color.Black,
+                Font = new Font("Times new roman", 50, FontStyle.Bold),
+                AutoSize = true,
+                BackColor = Color.Transparent
+            };
+            PauseMessage.Hide();
+            this.Controls.Add(PauseMessage);// добавляем метки в форму --- в коллекцию элементов управления в форме
 
-            // кнопка смены состояний START - PAUSE - RESUME
-            Mode_Button = new Label();
-            Mode_Button.Location = new Point((MapController.mapWidth) * 20 + 11, 400);
-            Mode_Button.Text= "▶";
-            Mode_Button.Font = new Font("Times new roman", 35, FontStyle.Bold);
-            Mode_Button.Size = new System.Drawing.Size(100,100);
-            Mode_Button.BackgroundImage = Background;
-            Mode_Button.ForeColor = Color.Red;
-            Mode_Button.Click += Mode_Button_click;
-            this.Controls.Add(Mode_Button);  // добавляем метки в форму --- в коллекцию элементов управления в форме
-
-            // надпись при нажатии Game_Over
-            Game_over = new Label();
-            Game_over.Location = new Point((MapController.mapWidth), (MapController.mapHeight) * 8); ;
-            Game_over.Text = "GAME OVER";
-            Game_over.Font = new Font("Times new roman", 40, FontStyle.Bold);
-            Game_over.BackgroundImage = Background;
-            Game_over.ForeColor = Color.White;
-            Game_over.AutoSize = true;
+            // надпись Game Over
+            Game_over = new Label
+            {
+                Location = new Point((MapController.mapWidth), (MapController.mapHeight) * 8),
+                Text = "GAME OVER",
+                Font = new Font("Times new roman", 40, FontStyle.Bold),
+                BackColor = Color.Transparent,
+                ForeColor = Color.Black,
+                AutoSize = true
+            };
             Game_over.Hide();
             this.Controls.Add(Game_over);  // добавляем метки в форму --- в коллекцию элементов управления в форме
 
             //обработчик событий для элемента timer1 
-            timer1.Tick += new EventHandler(update); // для движения мяча
+            timer1.Tick += new EventHandler(Update); // для движения мяча
 
             // обработчик событий для кнопок для движения платформы
-            this.KeyDown += new KeyEventHandler(inputCheck);
-
+            this.KeyDown += new KeyEventHandler(InputCheck);
             Init();
 
         }
+        public void StartPauseButtonClick(object sender, EventArgs e)
+        {
+            if (((Label)sender).BackgroundImage == CroppedStartButton1)
+            {
+                Game_over.Hide();
+                PauseMessage.Hide();
+                ((Label)sender).BackgroundImage = CroppedPauseButton;
+                map.map[map.BallY, map.BallX] = 8;
+                timer1.Start();
+            }
+            else
+            {
+                ((Label)sender).BackgroundImage = CroppedStartButton1;
+                Game_over.Hide();
+                timer1.Stop();
+                PauseMessage.Show();
+            }
+        }
+
+        public void RestartButtonClick(object sender, EventArgs e)
+        {
+
+        }
+
+        // обрезка элементов спрайта
+        public Bitmap CropSprite(Image image, Rectangle cropRectangle)
+        {
+
+            Bitmap croppedImage = new Bitmap(cropRectangle.Width, cropRectangle.Height);
+
+            using (Graphics g = Graphics.FromImage(croppedImage))
+            {
+                g.DrawImage(image, new Rectangle(0, 0, cropRectangle.Width, cropRectangle.Height), cropRectangle, GraphicsUnit.Pixel);
+            }
+
+            return croppedImage;
+        }
+
 
         // движение платформы
-        private void inputCheck(object sender, KeyEventArgs e)
+        private void InputCheck(object sender, KeyEventArgs e)
         {
 
             // какая клавиша нажата
@@ -142,10 +351,10 @@ namespace WindowsFormsApp2
         }
 
         // движение мячика
-        public void update(object sender, EventArgs e)
+        public void Update(object sender, EventArgs e)
         {
             // столкновение с нижней частью границы ---> Игра начинается заново, если мяч коснулся нижней границы
-            if (ball.BallY + ball.dirY > MapController.mapHeight - 1)
+            if (map.BallY + map.dirY > MapController.mapHeight - 1)
             {
                 player.lives--; // коснулись нижней части платформы -жизнь
                 if (player.lives <= 0)
@@ -160,20 +369,20 @@ namespace WindowsFormsApp2
                     Continue();
             }
             //очищаем предыдущее место
-            map.map[ball.BallY, ball.BallX] = 0;
+            map.map[map.BallY, map.BallX] = 0;
             // проверка на выход из карты - массива
-            if (!physics.IsCollade(player, ball, map,ScoreLabel, score_label))
+            if (!physics.IsCollade(player,map,ScoreLabel, ScoreNumberLabel))
             {
                 // меняем координаты
-                ball.BallX += ball.dirX;
+                map.BallX += map.dirX;
             }
-            if (!physics.IsCollade(player, ball, map, ScoreLabel, score_label))
+            if (!physics.IsCollade(player, map, ScoreLabel, ScoreNumberLabel))
             {
                 // меняем координаты
-                ball.BallY += ball.dirY;
+                map.BallY += map.dirY;
             }
             // задаем новое место
-            map.map[ball.BallY, ball.BallX] = 8;
+            map.map[map.BallY, map.BallX] = 8;
 
             // место размещения платформы на карте
 
@@ -182,30 +391,6 @@ namespace WindowsFormsApp2
             map.map[player.platformY, player.platformX + 2] = 999;// правый конец платформы
 
             Invalidate();//перерисовка холста
-        }
-
-        public void Mode_Button_click(object sender, EventArgs e)
-        {
-
-            if (Mode_Button.Text == "▶")
-            {
-                Game_over.Hide();
-                Mode_Button.Text = "⏸";
-                pause.Hide();
-                // место размещения мяча на карте
-                map.map[ball.BallY, ball.BallX] = 8;
-
-                // запуск таймера для осуществления цикла игры
-                timer1.Start();
-            }
-
-            else if (Mode_Button.Text == "⏸")
-            {
-                Mode_Button.Text = "▶";               
-                timer1.Stop();
-                pause.Show();
-            }
-
         }
 
         // генерация препятствий для мячика
@@ -218,7 +403,7 @@ namespace WindowsFormsApp2
             {
                 for (int j = 0; j < MapController.mapWidth; j += 2) // так препятствие состоит из 2 частей
                 {
-                    int currPlatform = r.Next(1, 5);
+                    int currPlatform = r.Next(1, 3);
                     map.map[i, j] = currPlatform;
                     map.map[i, j + 1] = currPlatform + currPlatform * 10; // для определения коллизий с мячом
                 }
@@ -229,29 +414,29 @@ namespace WindowsFormsApp2
         {
             timer1.Interval = 50;// нужна для мячика
             ScoreLabel.Text = "Score";
-            score_label.Text = player.score.ToString();
-            lives_lable.Text = "";
+            ScoreNumberLabel.Text = player.score.ToString();
+            LivesLabel.Text = "";
             for (int i = 0; i < player.lives; i++)
-                lives_lable.Text = lives_lable.Text + "♥";
+                LivesLabel.Text += "♥";
 
             // место размещения платформы на карте
 
             map.map[player.platformY, player.platformX] = 9; // левый конец платформы
             map.map[player.platformY, player.platformX + 1] = 99;// средина
             map.map[player.platformY, player.platformX + 2] = 999;// правый конец платформы
-            map.map[ball.BallY, ball.BallX] = 0;
+            map.map[map.BallY, map.BallX] = 0;
 
             // задаем расположение мячика
 
-            ball.BallY = player.platformY - 1; // на строчку выше платформы расположен мяч
-            ball.BallX = player.platformX + 1; // мяч размещен по середине платформы
+            map.BallY = player.platformY - 1; // на строчку выше платформы расположен мяч
+            map.BallX = player.platformX + 1; // мяч размещен по середине платформы
 
             // место размещения мяча на карте
-            map.map[ball.BallY, ball.BallX] = 8;
+            map.map[map.BallY, map.BallX] = 8;
 
             // реализация движения мячика
-            ball.dirX = 1;
-            ball.dirY = -1;
+            map.dirX = 1;
+            map.dirY = -1;
 
             // запуск таймера для осуществления цикла игры
             timer1.Start();
@@ -262,29 +447,27 @@ namespace WindowsFormsApp2
         {
 
             map = new MapController(); // создадим новый объект класса MapController
-            ball = new Ball();
             player = new Player();
             physics = new Physics2DController();
 
             // вычисление размеров окна, которые будут подстраиваться под нашу карту
 
-            this.Width = (MapController.mapWidth + 5) * 20;
+            this.Width = (MapController.mapWidth + 8) * 20;
             this.Height = (MapController.mapHeight + 2) * 20;
 
             timer1.Interval = 50;// нужна для мячика
 
             player.score = 0;
             player.lives = 5;
-            Mode_Button.Text = "▶";
-            pause.Text = "PAUSE";
-            ScoreLabel.Text = "Score";
-            score_label.Text = player.score.ToString();
+            PauseMessage.Text = "PAUSE";
+            ScoreLabel.Text = "SCORES";
+            ScoreNumberLabel.Text = player.score.ToString();
 
-            //pause.Text = "PAUSED";
+            //PauseMessage.Text = "PAUSED";
 
-            lives_lable.Text = "";
+            LivesLabel.Text = "";
             for (int i = 0; i < player.lives; i++)
-                lives_lable.Text = lives_lable.Text + "♥";
+                LivesLabel.Text += "♥";
 
             // заполняем массив карты нулями
             for (int i = 0; i < MapController.mapHeight; i++)// двигается по х
@@ -308,15 +491,15 @@ namespace WindowsFormsApp2
 
             // задаем расположение мячика
 
-            ball.BallY = player.platformY - 1; // на строчку выше платформы расположен мяч
-            ball.BallX = player.platformX + 1; // мяч размещен по середине платформы
+            map.BallY = player.platformY - 1; // на строчку выше платформы расположен мяч
+            map.BallX = player.platformX + 1; // мяч размещен по середине платформы
 
             // реализация движения мячика
-            ball.dirX = 1;
-            ball.dirY = -1;
+            map.dirX = 1;
+            map.dirY = -1;
 
             GeneratePlatform();
-           
+
         }
 
         /// отрисовка элементов
@@ -325,7 +508,5 @@ namespace WindowsFormsApp2
             map.DrawArea(e.Graphics);// рисуем границы игрового поля
             map.DrawMap(e.Graphics);// рисуем карту
         }
-
-
     }   
 }
