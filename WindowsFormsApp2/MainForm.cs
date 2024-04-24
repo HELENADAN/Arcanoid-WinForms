@@ -14,11 +14,11 @@ using System.Windows.Forms;
 namespace WindowsFormsApp2
 
 {   // В этом коде создается форма с игровым полем и элементами, такими как шарик и платформа. 
-    public partial class Form1 : Form
+    public partial class MainForm : Form
     {
 
-        MapController map;
-        Physics2DController physics;
+        GameField field;
+        GameLogic logic;
 
         public readonly Label ScoreLabel;
         public readonly Label ScoreNumberLabel;
@@ -26,7 +26,7 @@ namespace WindowsFormsApp2
         public readonly Label PauseMessage;
         public readonly Label Game_over;
 
-        private Image image = Image.FromFile("C:\\Users\\Елена\\Desktop\\Arc\\WindowsFormsApp2\\img_for_w2\\arca.jpg");
+        private Image image = Image.FromFile("C:\\Users\\Елена\\Desktop\\Arcanoid\\WindowsFormsApp2\\img_for_w2\\arca.jpg");
         public readonly Label StartPauseButton;
         private readonly Label RestartButton;
 
@@ -50,17 +50,17 @@ namespace WindowsFormsApp2
         private readonly Label ExitButton;
         private Image Image { get => image; set => image = value; }
         // конструктор формы
-        public Form1()
+        public MainForm()
         {
             InitializeComponent();
             this.KeyPreview = true;
             Createtimer();
-            physics = new Physics2DController();        
-            map = new MapController();
+            logic = new GameLogic();        
+            field = new GameField();
 
             // вычисление размеров окна, которые будут подстраиваться под нашу карту
-            this.Width = (map.Width + 8) * 20;
-            this.Height = (map.Height + 2) * 20;
+            this.Width = (field.Width + 8) * 20;
+            this.Height = (field.Height + 2) * 20;
 
             // общий фон
             this.BackColor = Color.White;
@@ -68,7 +68,7 @@ namespace WindowsFormsApp2
             // надпись Score
             ScoreLabel = new Label
             {
-                Location = new Point((map.Width) * 20 + 6, 50),
+                Location = new Point((field.Width) * 20 + 6, 50),
                 AutoSize = true,
                 BackColor = Color.White,
                 ForeColor = Color.Black,
@@ -80,12 +80,12 @@ namespace WindowsFormsApp2
             // количество заработанных очков
             ScoreNumberLabel = new Label
             {
-                Location = new Point((map.Width) * 20 + 4, 80),
+                Location = new Point((field.Width) * 20 + 4, 80),
                 AutoSize = true,
                 BackColor = Color.White,
                 ForeColor = Color.Black,
                 Font = new Font("Times New Roman", 23, FontStyle.Bold),
-                Text = physics.GetPlayerScore().ToString()
+                Text = logic.GetPlayerScore().ToString()
             };
             this.Controls.Add(ScoreNumberLabel);// добавляем метки в форму --- в коллекцию элементов управления в форме
 
@@ -93,7 +93,7 @@ namespace WindowsFormsApp2
 
             LivesLabel = new Label
             {
-                Location = new Point((map.Width) * 20 + 5, 4),
+                Location = new Point((field.Width) * 20 + 5, 4),
                 AutoSize = true,
                 BackColor = Color.White,
                 ForeColor = Color.Black,
@@ -102,7 +102,7 @@ namespace WindowsFormsApp2
            
             };
 
-            for (int i = 0; i < physics.GetPlayerLives(); i++)
+            for (int i = 0; i < logic.GetPlayerLives(); i++)
                 LivesLabel.Text += "♥";
 
             this.Controls.Add(LivesLabel);// добавляем метки в форму --- в коллекцию элементов управления в форме
@@ -116,7 +116,7 @@ namespace WindowsFormsApp2
 
             StartPauseButton = new Label
             {
-                Location = new Point((map.Width) * 20 + 40, 125),
+                Location = new Point((field.Width) * 20 + 40, 125),
                 BackgroundImage = CroppedStartButton1,
                 AutoSize = false,
                 Size = new Size(60, 60),
@@ -133,7 +133,7 @@ namespace WindowsFormsApp2
 
             RestartButton = new Label
             {
-                Location = new Point((map.Width) * 20 + 40, 300),
+                Location = new Point((field.Width) * 20 + 40, 300),
                 BackgroundImage = CroppedRestartButton,
                 AutoSize = false,
                 Size = new Size(60, 60),
@@ -151,7 +151,7 @@ namespace WindowsFormsApp2
 
             EasyLevel = new Label
             {
-                Location = new Point((map.Width) * 20 + 30, 215),
+                Location = new Point((field.Width) * 20 + 30, 215),
                 BackgroundImage = CroppedEasyButton,
                 AutoSize = false,
                 Size = new Size(20, 20),
@@ -161,7 +161,7 @@ namespace WindowsFormsApp2
 
             EasyLevelText = new Label
             {
-                Location = new Point((map.Width) * 20 + 55, 212),
+                Location = new Point((field.Width) * 20 + 55, 212),
                 ForeColor = Color.Black,
                 Font = new Font("Times new roman", 14, FontStyle.Regular),
                 AutoSize = true,
@@ -172,7 +172,7 @@ namespace WindowsFormsApp2
 
             MediumLevel = new Label
             {
-                Location = new Point((map.Width) * 20 + 30, 235),
+                Location = new Point((field.Width) * 20 + 30, 235),
                 BackgroundImage = CroppedEasyButton,
                 AutoSize = false,
                 Size = new Size(20, 20),
@@ -182,7 +182,7 @@ namespace WindowsFormsApp2
 
             MediumLevelText = new Label
             {
-                Location = new Point((map.Width) * 20 + 55, 232),
+                Location = new Point((field.Width) * 20 + 55, 232),
                 ForeColor = Color.Black,
                 Font = new Font("Times new roman", 14, FontStyle.Regular),
                 AutoSize = true,
@@ -193,7 +193,7 @@ namespace WindowsFormsApp2
 
             HardLevel = new Label
             {
-                Location = new Point((map.Width) * 20 + 30, 255),
+                Location = new Point((field.Width) * 20 + 30, 255),
                 BackgroundImage = CroppedEasyButton,
                 AutoSize = false,
                 Size = new Size(20, 20),
@@ -203,7 +203,7 @@ namespace WindowsFormsApp2
 
             HardLevelText = new Label
             {
-                Location = new Point((map.Width) * 20 + 55, 253),
+                Location = new Point((field.Width) * 20 + 55, 253),
                 ForeColor = Color.Black,
                 Font = new Font("Times new roman", 14, FontStyle.Regular),
                 AutoSize = true,
@@ -220,7 +220,7 @@ namespace WindowsFormsApp2
 
             InformButton = new Label
             {
-                Location = new Point((map.Width) * 20 + 95, 395),
+                Location = new Point((field.Width) * 20 + 95, 395),
                 BackgroundImage = CroppedInformButton,
                 AutoSize = false,
                 Size = new Size(45, 60),
@@ -236,7 +236,7 @@ namespace WindowsFormsApp2
 
             ResaltButton = new Label
             {
-                Location = new Point((map.Width) * 20 + 5, 395),
+                Location = new Point((field.Width) * 20 + 5, 395),
                 BackgroundImage = CroppedResaltButton,
                 AutoSize = false,
                 Size = new Size(80, 60),
@@ -252,7 +252,7 @@ namespace WindowsFormsApp2
 
             ExitButton = new Label
             {
-                Location = new Point((map.Width) * 20 + 45, 500),
+                Location = new Point((field.Width) * 20 + 45, 500),
                 BackgroundImage = CroppedExitButton,
                 AutoSize = false,
                 Size = new Size(60, 60),
@@ -262,7 +262,7 @@ namespace WindowsFormsApp2
             // надпись при нажатии PAUSED
             PauseMessage = new Label
             {
-                Location = new Point((map.Width) * 3, (map.Height) * 8),
+                Location = new Point((field.Width) * 3, (field.Height) * 8),
                 ForeColor = Color.Black,
                 Font = new Font("Times new roman", 50, FontStyle.Bold),
                 AutoSize = true,
@@ -275,7 +275,7 @@ namespace WindowsFormsApp2
             // надпись Game Over
             Game_over = new Label
             {
-                Location = new Point((map.Width), (map.Height) * 8),
+                Location = new Point((field.Width), (field.Height) * 8),
                 Text = "GAME OVER",
                 Font = new Font("Times new roman", 40, FontStyle.Bold),
                 BackColor = Color.Transparent,
@@ -302,7 +302,7 @@ namespace WindowsFormsApp2
                 Game_over.Hide();
                 PauseMessage.Hide();
                 ((Label)sender).BackgroundImage = CroppedPauseButton;
-                map.map[map.BallY, map.BallX] = 8;
+                field.field[field.BallY, field.BallX] = 8;
                 timer1.Start();
             }
             else 
@@ -338,30 +338,30 @@ namespace WindowsFormsApp2
 
             // какая клавиша нажата
             // очистим предыдущее место размещение платформы
-            map.map[map.platformY, map.platformX] = 0;
-            map.map[map.platformY, map.platformX + 1] = 0;
-            map.map[map.platformY, map.platformX + 2] = 0;
+            field.field[field.platformY, field.platformX] = 0;
+            field.field[field.platformY, field.platformX + 1] = 0;
+            field.field[field.platformY, field.platformX + 2] = 0;
 
             switch (e.KeyCode)
             {   // если нажали кнопку вправо
                 case Keys.Right:
-                        if (map.platformX + 4 < map.Width - 1)
+                        if (field.platformX + 4 < field.Width - 1)
                         // сдвинем координату платформы на единичку по оси x 
-                             map.platformX+=2;
+                             field.platformX+=2;
                     break;                 
                 // если нажали кнопку влево
                 case Keys.Left:
                     
-                    if (map.platformX > 1)
+                    if (field.platformX > 1)
                         // сдвинем координату платформы на единичку по оси x
-                        map.platformX -= 2;
+                        field.platformX -= 2;
                     break;                                     
             }
 
             //разместить платформу с учетом новых координат
-            map.map[map.platformY, map.platformX] = 9;
-            map.map[map.platformY, map.platformX + 1] = 99;
-            map.map[map.platformY, map.platformX + 2] = 999;
+            field.field[field.platformY, field.platformX] = 9;
+            field.field[field.platformY, field.platformX + 1] = 99;
+            field.field[field.platformY, field.platformX + 2] = 999;
                 
         }
       
@@ -380,15 +380,15 @@ namespace WindowsFormsApp2
         {
             // столкновение с нижней частью границы ---> Игра начинается заново, если мяч коснулся нижней границы
 
-            if (map.BallY + map.dirY > map.Height - 1)
+            if (field.BallY + field.dirY > field.Height - 1)
             {
-                physics.DamagePlayer();
+                logic.DamagePlayer();
 
-                if (physics.GetPlayerLives() <= 0)
+                if (logic.GetPlayerLives() <= 0)
                 {
                     timer1.Stop();
                     StartPauseButton.BackgroundImage = CroppedStartButton1;
-                    map = new MapController();
+                    field = new GameField();
                     Game_over.Show();
                 }
                 else
@@ -399,33 +399,33 @@ namespace WindowsFormsApp2
         }
         private void ClearPreviousBallPosition()
         {
-            map.map[map.BallY, map.BallX] = 0;
+            field.field[field.BallY, field.BallX] = 0;
         }
         private void HandleBallCollision()
         {
-            if (!physics.IsCollade(map, ScoreLabel, ScoreNumberLabel))
+            if (!logic.IsCollade(field, ScoreLabel, ScoreNumberLabel))
             {
                 // меняем координаты
-                map.BallX += map.dirX;
+                field.BallX += field.dirX;
             }
-            if (!physics.IsCollade(map, ScoreLabel, ScoreNumberLabel))
+            if (!logic.IsCollade(field, ScoreLabel, ScoreNumberLabel))
             {
                 // меняем координаты
-                map.BallY += map.dirY;
+                field.BallY += field.dirY;
             }
         }
         private void UpdateBallCoordinates()
         {
             // Обновляет координаты мяча на карте
             // задаем новое место
-            map.map[map.BallY, map.BallX] = 8;
+            field.field[field.BallY, field.BallX] = 8;
         }
         private void UpdatePlatformCoordinates()
         {
             // Размещает платформу на карте с помощью специальных маркеров для разных частей платформы
-            map.map[map.platformY, map.platformX] = 9; // левый конец платформы
-            map.map[map.platformY, map.platformX + 1] = 99;// средина
-            map.map[map.platformY, map.platformX + 2] = 999;// правый конец платформы
+            field.field[field.platformY, field.platformX] = 9; // левый конец платформы
+            field.field[field.platformY, field.platformX + 1] = 99;// средина
+            field.field[field.platformY, field.platformX + 2] = 999;// правый конец платформы
         }
 
         // продолжаем игру не изменяя состояние карты
@@ -433,29 +433,29 @@ namespace WindowsFormsApp2
         {
             timer1.Interval = 50;// нужна для мячика
             ScoreLabel.Text = "Score";
-            ScoreNumberLabel.Text = physics.GetPlayerScore().ToString();
+            ScoreNumberLabel.Text = logic.GetPlayerScore().ToString();
             LivesLabel.Text = "";
-            for (int i = 0; i < physics.GetPlayerLives(); i++)
+            for (int i = 0; i < logic.GetPlayerLives(); i++)
                 LivesLabel.Text += "♥";
 
             // место размещения платформы на карте
 
-            map.map[map.platformY, map.platformX] = 9; // левый конец платформы
-            map.map[map.platformY, map.platformX + 1] = 99;// средина
-            map.map[map.platformY, map.platformX + 2] = 999;// правый конец платформы
-            map.map[map.BallY, map.BallX] = 0;
+            field.field[field.platformY, field.platformX] = 9; // левый конец платформы
+            field.field[field.platformY, field.platformX + 1] = 99;// средина
+            field.field[field.platformY, field.platformX + 2] = 999;// правый конец платформы
+            field.field[field.BallY, field.BallX] = 0;
 
             // задаем расположение мячика
 
-            map.BallY = map.platformY - 4; // на строчку выше платформы расположен мяч
-            map.BallX = map.platformX + 1; // мяч размещен по середине платформы
+            field.BallY = field.platformY - 4; // на строчку выше платформы расположен мяч
+            field.BallX = field.platformX + 1; // мяч размещен по середине платформы
 
             // место размещения мяча на карте
-            map.map[map.BallY, map.BallX] = 8;
+            field.field[field.BallY, field.BallX] = 8;
 
             // реализация движения мячика
-            map.dirX = 1;
-            map.dirY = -1;
+            field.dirX = 1;
+            field.dirY = -1;
 
             // запуск таймера для осуществления цикла игры
             timer1.Start();
@@ -464,8 +464,10 @@ namespace WindowsFormsApp2
         // отрисовка элементов
         public void OnPaint(object sender, PaintEventArgs e)
         {
-            map.DrawArea(e.Graphics);// рисуем границы игрового поля
-            map.DrawMap(e.Graphics);// рисуем карту
+            field.DrawArea(e.Graphics);// рисуем границы игрового поля
+            field.DrawMap(e.Graphics);// рисуем карту
         }
+
+        
     }   
 }

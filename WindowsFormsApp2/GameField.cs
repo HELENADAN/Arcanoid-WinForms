@@ -7,14 +7,14 @@ using System.Threading.Tasks;
 
 namespace WindowsFormsApp2
 {
-    internal class MapController
+    internal class GameField
     {       
         public Image TextureSet; // картинка для игры
         // карта, ее размер, двумерный массив = игровое поле
         public readonly int Width;  
         public readonly int Height;
 
-        public int[,] map;
+        public int[,] field;
 
         // переменные, которые отвечают за позицию платформы
         public int platformX = 0;
@@ -35,7 +35,7 @@ namespace WindowsFormsApp2
             {
                 for (int j = 0; j < this.Width; j += 2) // так препятствие состоит из 2 частей
                 {
-                    map[i, j] = map[i - 1, j];
+                    field[i, j] = field[i - 1, j];
                 }
             }
 
@@ -53,29 +53,29 @@ namespace WindowsFormsApp2
                 for (int j = 0; j < this.Width; j += 2) // так препятствие состоит из 2 частей
                 {
                     int currPlatform = r.Next(1, 3);
-                    map[i, j] = currPlatform;
-                    map[i, j + 1] = currPlatform + currPlatform * 10; // для определения коллизий с мячом
+                    field[i, j] = currPlatform;
+                    field[i, j + 1] = currPlatform + currPlatform * 10; // для определения коллизий с мячом
                 }
             }
 
         }
         // метод для инициализации
-        public MapController()
+        public GameField()
         {
             // подгрузка картинки
-            TextureSet = new Bitmap("C:\\Users\\Елена\\Desktop\\Arc\\WindowsFormsApp2\\img_for_w2\\arca.jpg");
+            TextureSet = new Bitmap("C:\\Users\\Елена\\Desktop\\Arcanoid\\WindowsFormsApp2\\img_for_w2\\arca.jpg");
 
             this.Width = 20;
             this.Height = 30;
 
-            map = new int[Height, Width];
+            field = new int[Height, Width];
           
             // заполняем массив карты нулями
             for (int i = 0; i < this.Height; i++)// двигается по х
             {
                 for (int j = 0; j < this.Width; j++)// двигается по у
                 {
-                    map[i, j] = 0;// заполняем двумерный массив нулями
+                    field[i, j] = 0;// заполняем двумерный массив нулями
                 }
             }
 
@@ -86,9 +86,9 @@ namespace WindowsFormsApp2
 
             // место размещения платформы на карте
 
-            map[platformY, platformX] = 9; // левый конец платформы
-            map[platformY, platformX + 1] = 99;// средина
-            map[platformY, platformX + 2] = 999;// правый конец платформы
+            field[platformY, platformX] = 9; // левый конец платформы
+            field[platformY, platformX + 1] = 99;// средина
+            field[platformY, platformX + 2] = 999;// правый конец платформы
 
             // задаем расположение мячика
 
@@ -109,22 +109,22 @@ namespace WindowsFormsApp2
             {
                 for (int j = 0; j < this.Width; j++)
                 {
-                    if (map[i, j] == 9)
+                    if (field[i, j] == 9)
                     {
                         g.DrawImage(TextureSet, new Rectangle(new Point(j * 20, i * 20), new Size(90, 40)), new Rectangle(73, 236, 307, 123), GraphicsUnit.Pixel);
                     }
 
-                    if (map[i, j] == 8)
+                    if (field[i, j] == 8)
                     {
                         g.DrawImage(TextureSet, new Rectangle(new Point(j * 20, i * 20), new Size(35, 35)), new Rectangle(419, 195, 125, 125), GraphicsUnit.Pixel);
                     }
 
-                    if (map[i, j] == 1)
+                    if (field[i, j] == 1)
                     {
                         g.DrawImage(TextureSet, new Rectangle(new Point(j * 20, i * 20), new Size(40, 20)), new Rectangle(82, 420, 92, 37), GraphicsUnit.Pixel);
                     }
 
-                    if (map[i, j] == 2)
+                    if (field[i, j] == 2)
                     {
                         g.DrawImage(TextureSet, new Rectangle(new Point(j * 20, i * 20), new Size(40, 20)), new Rectangle(229, 420, 92, 37), GraphicsUnit.Pixel);
                     }
