@@ -6,14 +6,37 @@ using System.Threading.Tasks;
 
 namespace WindowsFormsApp2
 {
-    internal class Player
+    class Player
     {
+        private int score; // очки
+        private int lives; // жизни
 
-        // переменные, которые отвечают за позицию платформы
-        public int platformX = 0;
-        public int platformY = 0;
+        public Player() 
+        {
+            score = 0;
+            lives = 5;
+        }
 
-        public int score; // очки
-        public int lives; // жизни
+        public int GetScore()
+        {
+            return score;
+        }
+
+        public int GetLives()
+        {
+            return lives;
+        }
+
+        public int AddScore(int score)
+        {
+            this.score += score;
+            return score;
+        }
+
+        public int SubtructLife()
+        {   
+            if (lives>0) lives--;
+            return lives;
+        }
     }
 }

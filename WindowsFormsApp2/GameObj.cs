@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 
 namespace WindowsFormsApp2
 {
-    internal class Ball : GameObj
+    abstract class GameObj
     {
-
+        protected int Code;
     }
 }

@@ -6,8 +6,10 @@ using System.Threading.Tasks;
 
 namespace WindowsFormsApp2
 {
-    internal class Ball : GameObj
+    internal class Block : GameObj
     {
-
+        protected int Color;
+        protected int HP;
+        protected int Count;
     }
 }

@@ -45,6 +45,8 @@
             this.ClientSize = new System.Drawing.Size(908, 531);
             this.DoubleBuffered = true;
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+            this.MaximizeBox = false;
+            this.MinimizeBox = false;
             this.Name = "Form1";
             this.Text = "Arcanoid";
             this.Paint += new System.Windows.Forms.PaintEventHandler(this.OnPaint);
