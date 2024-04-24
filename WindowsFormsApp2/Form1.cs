@@ -364,17 +364,26 @@ namespace WindowsFormsApp2
             map.map[map.platformY, map.platformX + 2] = 999;
                 
         }
-
-        
-        // движение мячика
+      
+        // обработка коллизий мяча и обновление карты 
         public void Update(object sender, EventArgs e)
         {
+            HandleBottomCollision(); // Обрабатывает столкновение с нижней границей карты
+            ClearPreviousBallPosition(); // Очищает предыдущее положение мяча
+            HandleBallCollision(); // Обработка коллизий мяча
+            UpdateBallCoordinates();// Обновление координат мяча
+            UpdatePlatformCoordinates();// Обновляет местоположение платформы на карте
+            Invalidate();
+        }
+
+        private void HandleBottomCollision()
+        {
             // столкновение с нижней частью границы ---> Игра начинается заново, если мяч коснулся нижней границы
+
             if (map.BallY + map.dirY > map.Height - 1)
             {
                 physics.DamagePlayer();
 
-                // коснулись нижней части платформы -жизнь
                 if (physics.GetPlayerLives() <= 0)
                 {
                     timer1.Stop();
@@ -383,12 +392,17 @@ namespace WindowsFormsApp2
                     Game_over.Show();
                 }
                 else
+                {
                     Continue();
+                }
             }
-            //очищаем предыдущее место
+        }
+        private void ClearPreviousBallPosition()
+        {
             map.map[map.BallY, map.BallX] = 0;
-
-            // проверка на выход из карты - массива
+        }
+        private void HandleBallCollision()
+        {
             if (!physics.IsCollade(map, ScoreLabel, ScoreNumberLabel))
             {
                 // меняем координаты
@@ -399,16 +413,19 @@ namespace WindowsFormsApp2
                 // меняем координаты
                 map.BallY += map.dirY;
             }
+        }
+        private void UpdateBallCoordinates()
+        {
+            // Обновляет координаты мяча на карте
             // задаем новое место
             map.map[map.BallY, map.BallX] = 8;
-
-            // место размещения платформы на карте
-
+        }
+        private void UpdatePlatformCoordinates()
+        {
+            // Размещает платформу на карте с помощью специальных маркеров для разных частей платформы
             map.map[map.platformY, map.platformX] = 9; // левый конец платформы
             map.map[map.platformY, map.platformX + 1] = 99;// средина
             map.map[map.platformY, map.platformX + 2] = 999;// правый конец платформы
-
-            Invalidate();
         }
 
         // продолжаем игру не изменяя состояние карты
