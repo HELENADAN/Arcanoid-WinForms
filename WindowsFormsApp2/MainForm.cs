@@ -3,13 +3,17 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
+using TextBox = System.Windows.Forms.TextBox;
+using ToolTip = System.Windows.Forms.ToolTip;
 
 namespace WindowsFormsApp2
 
@@ -46,9 +50,13 @@ namespace WindowsFormsApp2
         private readonly Label HardLevelText;
 
         private readonly Label InformButton;
-        private readonly Label ResaltButton;
+        private readonly Label ResultButton;
         private readonly Label ExitButton;
         private Image Image { get => image; set => image = value; }
+
+        string filePath = "C:\\Users\\Елена\\Desktop\\Arcanoid\\WindowsFormsApp2\\Results.txt";
+        public int FinalPlayersScore;
+
         // конструктор формы
         public MainForm()
         {
@@ -142,6 +150,8 @@ namespace WindowsFormsApp2
 
             RestartButton.Click += RestartButtonClick;
             this.Controls.Add(RestartButton);
+            ToolTip toolTip_res = new ToolTip();
+            toolTip_res.SetToolTip(RestartButton, "Начать заново");
 
             // кнопки Level
 
@@ -158,6 +168,8 @@ namespace WindowsFormsApp2
                 BackgroundImageLayout = ImageLayout.Stretch
             };
             this.Controls.Add(EasyLevel);
+            ToolTip toolTip_easyl = new ToolTip();
+            toolTip_easyl.SetToolTip(EasyLevel, "Простой уровень");
 
             EasyLevelText = new Label
             {
@@ -169,6 +181,8 @@ namespace WindowsFormsApp2
                 Text = "Easy"
             };
             this.Controls.Add(EasyLevelText);
+            ToolTip toolTip_easy = new ToolTip();
+            toolTip_easy.SetToolTip(EasyLevelText, "Простой уровень");
 
             MediumLevel = new Label
             {
@@ -179,6 +193,8 @@ namespace WindowsFormsApp2
                 BackgroundImageLayout = ImageLayout.Stretch
             };
             this.Controls.Add(MediumLevel);
+            ToolTip toolTip_mediuml = new ToolTip();
+            toolTip_mediuml.SetToolTip(MediumLevel, "Средний уровень");
 
             MediumLevelText = new Label
             {
@@ -190,6 +206,8 @@ namespace WindowsFormsApp2
                 Text = "Medium"
             };
             this.Controls.Add(MediumLevelText);
+            ToolTip toolTip_medium = new ToolTip();
+            toolTip_medium.SetToolTip(MediumLevelText, "Средний уровень");
 
             HardLevel = new Label
             {
@@ -200,6 +218,8 @@ namespace WindowsFormsApp2
                 BackgroundImageLayout = ImageLayout.Stretch
             };
             this.Controls.Add(HardLevel);
+            ToolTip toolTip_hardl = new ToolTip();
+            toolTip_hardl.SetToolTip(HardLevel, "Сложный уровень");
 
             HardLevelText = new Label
             {
@@ -211,6 +231,8 @@ namespace WindowsFormsApp2
                 Text = "Hard"
             };
             this.Controls.Add(HardLevelText);
+            ToolTip toolTip_hard = new ToolTip();
+            toolTip_hard.SetToolTip(HardLevelText, "Сложный уровень");
 
             // кнопка Справка
 
@@ -227,6 +249,9 @@ namespace WindowsFormsApp2
                 BackgroundImageLayout = ImageLayout.Stretch
             };
             this.Controls.Add(InformButton);
+            InformButton.Click += InformButtonClick;
+            ToolTip toolTip_inf = new ToolTip();
+            toolTip_inf.SetToolTip(InformButton, "Об игре");
 
             // кнопка Результат
 
@@ -234,7 +259,7 @@ namespace WindowsFormsApp2
 
             CroppedResaltButton = CropSprite(Image, CroppResaltButton);
 
-            ResaltButton = new Label
+            ResultButton = new Label
             {
                 Location = new Point((field.Width) * 20 + 5, 395),
                 BackgroundImage = CroppedResaltButton,
@@ -242,7 +267,10 @@ namespace WindowsFormsApp2
                 Size = new Size(80, 60),
                 BackgroundImageLayout = ImageLayout.Stretch
             };
-            this.Controls.Add(ResaltButton);
+            this.Controls.Add(ResultButton);
+            ResultButton.Click += ResultButtonClick;
+            ToolTip toolTip_result = new ToolTip();
+            toolTip_result.SetToolTip(ResultButton, "Лучшие результаты");
 
             // кнопка Выход
 
@@ -259,6 +287,10 @@ namespace WindowsFormsApp2
                 BackgroundImageLayout = ImageLayout.Stretch
             };
             this.Controls.Add(ExitButton);
+            ToolTip toolTip_exit = new ToolTip();
+            toolTip_exit.SetToolTip(ExitButton, "Выход");
+            ExitButton.Click += ExitButtonClick;
+
             // надпись при нажатии PAUSED
             PauseMessage = new Label
             {
@@ -318,6 +350,92 @@ namespace WindowsFormsApp2
             Application.Restart();
         }
 
+        public void InformButtonClick(object sender, EventArgs e)
+        {
+            // Создание формы
+            Form InformForm = new Form();
+            InformForm.Text = "Об игре";
+            InformForm.Width = 700;
+            InformForm.Height = 550;
+            InformForm.AutoSize = true; // Автоматическое изменение размера формы в зависимости от содержимого
+
+            GroupBox name = new GroupBox();
+            name.Text = "Арканоид";
+            name.Font = new Font("Times New Roman", 12, FontStyle.Bold);
+            name.Location = new System.Drawing.Point(10, 10);
+            name.Size = new System.Drawing.Size(InformForm.Width - 20, 90);
+            InformForm.Controls.Add(name);
+
+            Label gamename = new Label();
+            gamename.Text = "Классическая аркадная игра, целью которой является разрушение всех блоков на экране с помощью мяча, отскакивающего от платформы, управляемой игроком.";
+            gamename.Location = new System.Drawing.Point(10, 20);
+            gamename.Font = new Font("Times New Roman", 11, FontStyle.Regular);
+            gamename.Size = new System.Drawing.Size(name.Width - 20, 90);
+            name.Controls.Add(gamename);
+
+            GroupBox logic = new GroupBox();
+            logic.Text = "Логика";
+            logic.Font = new Font("Times New Roman", 12, FontStyle.Bold);
+            logic.Location = new System.Drawing.Point(10, name.Bottom + 10);
+            logic.Size = new System.Drawing.Size(InformForm.Width - 20,140); 
+            InformForm.Controls.Add(logic);
+
+            Label gameLogic = new Label();
+            gameLogic.Text = "В игре Арканоид игрок управляет платформой, которая движется горизонтально вдоль нижней части экрана. Целью игры является отбивание мяча, чтобы разрушить все блоки на экране. Мяч отскакивает от платформы и стен, а при попадании на блок разрушает его. Игрок должен предотвращать падение мяча за нижнюю границу экрана, в противном случае он потеряет одну из своих жизней.";
+            gameLogic.Location = new System.Drawing.Point(10, 20);
+            gameLogic.Size = new System.Drawing.Size(logic.Width - 20, 140);
+            gameLogic.Font = new Font("Times New Roman", 11, FontStyle.Regular);
+            logic.Controls.Add(gameLogic);
+
+            GroupBox aboutGame = new GroupBox();
+            aboutGame.Text = "Управление";
+            aboutGame.Font = new Font("Times New Roman", 12, FontStyle.Bold);
+            aboutGame.Location = new System.Drawing.Point(10, logic.Bottom + 10);
+            aboutGame.Size = new System.Drawing.Size(InformForm.Width - 20, 60);
+            InformForm.Controls.Add(aboutGame);
+
+            Label work = new Label();
+            work.Text = "Для управления платформой используются стрелки влево-вправо на клавиатуре.";
+            work.Location = new System.Drawing.Point(10, 20);
+            work.Size = new System.Drawing.Size(aboutGame.Width - 20, 60);
+            work.Font = new Font("Times New Roman", 11, FontStyle.Regular);
+            aboutGame.Controls.Add(work);
+
+            GroupBox Author = new GroupBox();
+            Author.Text = "Автор";
+            Author.Font = new Font("Times New Roman", 12, FontStyle.Bold);
+            Author.Location = new System.Drawing.Point(10, aboutGame.Bottom + 10);
+            Author.Size = new System.Drawing.Size(InformForm.Width - 20, 40);
+            InformForm.Controls.Add(Author);
+
+            Label AboutAuthor = new Label();
+            AboutAuthor.Text = "студентка гр. 2-80 Данченко Е.А.";
+            AboutAuthor.Location = new System.Drawing.Point(10, 20);
+            AboutAuthor.Size = new System.Drawing.Size(Author.Width - 20, 40);
+            AboutAuthor.Font = new Font("Times New Roman", 11, FontStyle.Regular);
+            Author.Controls.Add(AboutAuthor);
+
+            GroupBox Year = new GroupBox();
+            Year.Text = "Год создания";
+            Year.Font = new Font("Times New Roman", 12, FontStyle.Bold);
+            Year.Location = new System.Drawing.Point(10, Author.Bottom + 10);
+            Year.Size = new System.Drawing.Size(InformForm.Width - 20, 40);
+            InformForm.Controls.Add(Year);
+
+            Label AboutYear = new Label();
+            AboutYear.Text = "2024";
+            AboutYear.Location = new System.Drawing.Point(10, 20);
+            AboutYear.Size = new System.Drawing.Size(Year.Width - 20, 40);
+            AboutYear.Font = new Font("Times New Roman", 11, FontStyle.Regular);
+            Year.Controls.Add(AboutYear);
+
+            InformForm.Show();
+        }
+        public void ExitButtonClick(object sender, EventArgs e)
+        {             
+               this.Close();
+        }
+
         // обрезка элементов спрайта
         private Bitmap CropSprite(Image image, Rectangle cropRectangle)
         {
@@ -375,7 +493,6 @@ namespace WindowsFormsApp2
             UpdatePlatformCoordinates();// Обновляет местоположение платформы на карте
             Invalidate();
         }
-
         private void HandleBottomCollision()
         {
             // столкновение с нижней частью границы ---> Игра начинается заново, если мяч коснулся нижней границы
@@ -383,13 +500,15 @@ namespace WindowsFormsApp2
             if (field.BallY + field.dirY > field.Height - 1)
             {
                 logic.DamagePlayer();
-
-                if (logic.GetPlayerLives() <= 0)
+                
+                if (logic.GetPlayerLives() <= 0)                  
                 {
+                    FinalPlayersScore = logic.GetPlayerScore();
+                    AddResults(FinalPlayersScore);
                     timer1.Stop();
                     StartPauseButton.BackgroundImage = CroppedStartButton1;
                     field = new GameField();
-                    Game_over.Show();
+                    Game_over.Show();                   
                 }
                 else
                 {
@@ -397,6 +516,89 @@ namespace WindowsFormsApp2
                 }
             }
         }
+        public void AddResults(int FinalPlayersScore)
+        {
+            // Создание массива фиксированной длины из 10 чисел
+            int[] numbersFromFile = new int[11];
+            int currentIndex = 0;
+            int newNumber = FinalPlayersScore;
+
+            // Чтение 11 чисел из файла
+
+            using (StreamReader sr = new StreamReader(filePath))
+            {
+                string line;
+                while ((line = sr.ReadLine()) != null && currentIndex < 11)
+                {
+                    if (int.TryParse(line, out int number))
+                    {
+                        numbersFromFile[currentIndex] = number;
+                        numbersFromFile[10] = newNumber;
+                        currentIndex++;
+                    }
+                }
+            }
+
+            // Добавление полученных очков в массив после сравнения (сортировка вставкой)
+
+            for (int i = 1; i < numbersFromFile.Length; i++) // Начинаем с индекса 1 (так как элемент с индексом 0 считается уже отсортированным). Проходим по массиву слева направо.
+            {
+                int key = numbersFromFile[i]; // Текущий элемент, который нужно вставить в правильное место
+
+                int j = i - 1;// Индекс элемента, перед которым нужно вставить текущий элемент
+
+                // Сравнение и сдвиг элементов влево, пока текущий элемент больше предыдущего
+                while (j >= 0 && numbersFromFile[j] < key)
+                {
+                    numbersFromFile[j + 1] = numbersFromFile[j]; //  Обмен местами текущего элемента и предыдущего элемента.
+                    j--;
+                }
+
+                numbersFromFile[j + 1] = key; // Вставка текущего элемента на его правильное место после того, как он был сдвинут влево.
+            }
+
+            // Запись массива обратно в файл
+            using (StreamWriter sw = new StreamWriter(filePath, false))
+            {
+                foreach (int num in numbersFromFile)
+                {
+                    sw.WriteLine(num);
+                }
+            }           
+        }
+        private void ResultButtonClick(object sender, EventArgs e)
+        {
+
+            // Создание формы
+            Form ResultsForm = new Form();
+            ResultsForm.Text ="Лучшие результаты";
+
+            Label[] labels = new Label[10];
+
+            for (int i = 0; i < labels.Length; i++)
+            {
+                labels[i] = new Label();
+                labels[i].Location = new Point(ResultsForm.Width / 2, 25*i);
+                ResultsForm.Controls.Add(labels[i]);
+            }
+
+            // Показ файла
+
+            using (StreamReader reader = new StreamReader(filePath))
+            {
+                int index = 0;// для отслеживания текущего индекса в массиве label
+                string line; // для хранения строки, прочитанной из файла
+
+                while (index < labels.Length && (line = reader.ReadLine()) != null)
+                {   
+                    if (line != "" && int.Parse(line) != 0) labels[index].Text = line;
+                    index++;
+                }
+            }
+
+            // Вывод формы
+            ResultsForm.Show();
+        } 
         private void ClearPreviousBallPosition()
         {
             field.field[field.BallY, field.BallX] = 0;
@@ -451,7 +653,7 @@ namespace WindowsFormsApp2
             field.BallX = field.platformX + 1; // мяч размещен по середине платформы
 
             // место размещения мяча на карте
-            field.field[field.BallY, field.BallX] = 8;
+            field.field[field.BallY, field.BallX] = field.GetBallCode();
 
             // реализация движения мячика
             field.dirX = 1;
@@ -467,7 +669,6 @@ namespace WindowsFormsApp2
             field.DrawArea(e.Graphics);// рисуем границы игрового поля
             field.DrawMap(e.Graphics);// рисуем карту
         }
-
         
     }   
 }

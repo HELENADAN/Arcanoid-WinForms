@@ -9,5 +9,10 @@ namespace WindowsFormsApp2
     abstract class GameObj
     {
         protected int Code;
+
+        public int GetCode()
+        {
+            return Code;
+        }
     }
 }

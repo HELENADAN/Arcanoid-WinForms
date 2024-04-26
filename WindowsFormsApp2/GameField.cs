@@ -20,6 +20,8 @@ namespace WindowsFormsApp2
         public int platformX = 0;
         public int platformY = 0;
 
+        private Ball ball = new Ball();
+
         // переменные, которые отвечают за координаты мячика на карте
         public int BallX;
         public int BallY;
@@ -28,7 +30,10 @@ namespace WindowsFormsApp2
         public int dirX = 0;
         public int dirY = 0;
         // добавление сложности == смещаем все линии вниз и добавляем одну лининю
-
+        public int GetBallCode()
+        {
+            return ball.GetCode();
+        }
         public void AddLine()
         {
             for (int i = this.Height - 2; i > 0; i--)
