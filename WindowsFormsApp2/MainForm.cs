@@ -56,6 +56,7 @@ namespace WindowsFormsApp2
 
         string filePath = "C:\\Users\\Елена\\Desktop\\Arcanoid\\WindowsFormsApp2\\Results.txt";
         public int FinalPlayersScore;
+        int[] numbersFromFile = new int[11];
 
         // конструктор формы
         public MainForm()
@@ -316,7 +317,24 @@ namespace WindowsFormsApp2
             };
             Game_over.Hide();
             this.Controls.Add(Game_over);  // добавляем метки в форму --- в коллекцию элементов управления в форме
-           
+
+
+            try
+            {
+                using (StreamReader reader = new StreamReader(filePath))
+                {
+                    int index = 0;// для отслеживания текущего индекса в массиве label
+                    string line; // для хранения строки, прочитанной из файла
+
+                    while (index < numbersFromFile.Length && (line = reader.ReadLine()) != null)
+                    {
+                        if (line != "" && int.Parse(line) != 0) numbersFromFile[index] = int.Parse(line);
+                        index++;
+                    }
+                }
+            }
+            catch(FileNotFoundException){}
+            
             // обработчик событий для кнопок для движения платформы
             this.KeyDown += new KeyEventHandler(InputCheck);
         }
@@ -518,26 +536,7 @@ namespace WindowsFormsApp2
         }
         public void AddResults(int FinalPlayersScore)
         {
-            // Создание массива фиксированной длины из 10 чисел
-            int[] numbersFromFile = new int[11];
-            int currentIndex = 0;
-            int newNumber = FinalPlayersScore;
-
-            // Чтение 11 чисел из файла
-
-            using (StreamReader sr = new StreamReader(filePath))
-            {
-                string line;
-                while ((line = sr.ReadLine()) != null && currentIndex < 11)
-                {
-                    if (int.TryParse(line, out int number))
-                    {
-                        numbersFromFile[currentIndex] = number;
-                        numbersFromFile[10] = newNumber;
-                        currentIndex++;
-                    }
-                }
-            }
+            numbersFromFile[numbersFromFile.Length - 1] = FinalPlayersScore;
 
             // Добавление полученных очков в массив после сравнения (сортировка вставкой)
 
@@ -559,13 +558,15 @@ namespace WindowsFormsApp2
 
             // Запись массива обратно в файл
             using (StreamWriter sw = new StreamWriter(filePath, false))
-            {
-                foreach (int num in numbersFromFile)
+            {   
+                for (int i = 0; i < numbersFromFile.Length - 1; i++)
                 {
-                    sw.WriteLine(num);
+                    sw.WriteLine(numbersFromFile[i]);
                 }
-            }           
+            }
+
         }
+
         private void ResultButtonClick(object sender, EventArgs e)
         {
 
@@ -581,21 +582,17 @@ namespace WindowsFormsApp2
                 labels[i].Location = new Point(ResultsForm.Width / 2, 25*i);
                 ResultsForm.Controls.Add(labels[i]);
             }
-
-            // Показ файла
-
-            using (StreamReader reader = new StreamReader(filePath))
+            bool resultWas = false;
+            for (int i = 0; i < numbersFromFile.Length - 1; i++)
             {
-                int index = 0;// для отслеживания текущего индекса в массиве label
-                string line; // для хранения строки, прочитанной из файла
-
-                while (index < labels.Length && (line = reader.ReadLine()) != null)
-                {   
-                    if (line != "" && int.Parse(line) != 0) labels[index].Text = line;
-                    index++;
+                if (numbersFromFile[i] != 0)
+                { 
+                    labels[i].Text = numbersFromFile[i].ToString();
+                    resultWas = true;
                 }
+                
             }
-
+            if(!resultWas) labels[0].Text = "0";
             // Вывод формы
             ResultsForm.Show();
         } 
