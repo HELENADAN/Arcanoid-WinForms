@@ -6,9 +6,11 @@ using System.Threading.Tasks;
 
 namespace WindowsFormsApp2
 {
-    abstract class GameObj
+    internal class DoubleBlock : Block
     {
-       public abstract int GetCode();
-
+        public override int GetCode()
+        {
+            return 2;
+        }
     }
 }

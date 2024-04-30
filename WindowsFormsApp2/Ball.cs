@@ -8,6 +8,10 @@ namespace WindowsFormsApp2
 {
     internal class Ball : GameObj
     {
-        protected int Code = 8;
+
+        public override int GetCode()
+        {
+            return 8;
+        }
     }
 }

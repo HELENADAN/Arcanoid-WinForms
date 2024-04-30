@@ -8,5 +8,9 @@ namespace WindowsFormsApp2
 {
     internal class Platform:GameObj
     {
+        public override int GetCode()
+        {
+            return 9;
+        }
     }
 }

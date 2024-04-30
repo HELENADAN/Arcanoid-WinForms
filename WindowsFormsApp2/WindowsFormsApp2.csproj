@@ -48,7 +48,7 @@
   <ItemGroup>
     <Compile Include="Ball.cs" />
     <Compile Include="Block.cs" />
-    <Compile Include="Double Block.cs" />
+    <Compile Include="DoubleBlock.cs" />
     <Compile Include="MainForm.cs">
       <SubType>Form</SubType>
     </Compile>

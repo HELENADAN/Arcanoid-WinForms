@@ -337,6 +337,8 @@ namespace WindowsFormsApp2
             
             // обработчик событий для кнопок для движения платформы
             this.KeyDown += new KeyEventHandler(InputCheck);
+
+            
         }
 
         //для элемента timer1 
@@ -352,7 +354,7 @@ namespace WindowsFormsApp2
                 Game_over.Hide();
                 PauseMessage.Hide();
                 ((Label)sender).BackgroundImage = CroppedPauseButton;
-                field.field[field.BallY, field.BallX] = 8;
+                field.field[field.BallY, field.BallX] = field.GetBallCode();
                 timer1.Start();
             }
             else 
@@ -495,10 +497,10 @@ namespace WindowsFormsApp2
             }
 
             //разместить платформу с учетом новых координат
-            field.field[field.platformY, field.platformX] = 9;
-            field.field[field.platformY, field.platformX + 1] = 99;
-            field.field[field.platformY, field.platformX + 2] = 999;
-                
+            field.field[field.platformY, field.platformX] = field.GetPlatformCode(); // левый конец платформы
+            field.field[field.platformY, field.platformX + 1] = field.GetPlatformCode() * 10 + field.field[field.platformY, field.platformX];// середина
+            field.field[field.platformY, field.platformX + 2] = field.GetPlatformCode() * 100 + field.field[field.platformY, field.platformX + 1];// правый конец платформы
+
         }
       
         // обработка коллизий мяча и обновление карты 
@@ -569,7 +571,6 @@ namespace WindowsFormsApp2
 
         private void ResultButtonClick(object sender, EventArgs e)
         {
-
             // Создание формы
             Form ResultsForm = new Form();
             ResultsForm.Text ="Лучшие результаты";
@@ -617,14 +618,14 @@ namespace WindowsFormsApp2
         {
             // Обновляет координаты мяча на карте
             // задаем новое место
-            field.field[field.BallY, field.BallX] = 8;
+            field.field[field.BallY, field.BallX] = field.GetBallCode();
         }
         private void UpdatePlatformCoordinates()
         {
             // Размещает платформу на карте с помощью специальных маркеров для разных частей платформы
-            field.field[field.platformY, field.platformX] = 9; // левый конец платформы
-            field.field[field.platformY, field.platformX + 1] = 99;// средина
-            field.field[field.platformY, field.platformX + 2] = 999;// правый конец платформы
+            field.field[field.platformY, field.platformX] = field.GetPlatformCode(); // левый конец платформы
+            field.field[field.platformY, field.platformX + 1] = field.GetPlatformCode() * 10 + field.field[field.platformY, field.platformX];// середина
+            field.field[field.platformY, field.platformX + 2] = field.GetPlatformCode() * 100 + field.field[field.platformY, field.platformX + 1];// правый конец платформы
         }
 
         // продолжаем игру не изменяя состояние карты
@@ -639,9 +640,9 @@ namespace WindowsFormsApp2
 
             // место размещения платформы на карте
 
-            field.field[field.platformY, field.platformX] = 9; // левый конец платформы
-            field.field[field.platformY, field.platformX + 1] = 99;// средина
-            field.field[field.platformY, field.platformX + 2] = 999;// правый конец платформы
+            field.field[field.platformY, field.platformX] = field.GetPlatformCode(); // левый конец платформы
+            field.field[field.platformY, field.platformX + 1] = field.GetPlatformCode() * 10 + field.field[field.platformY, field.platformX];// середина
+            field.field[field.platformY, field.platformX + 2] = field.GetPlatformCode() * 100 + field.field[field.platformY, field.platformX + 1];// правый конец платформы
             field.field[field.BallY, field.BallX] = 0;
 
             // задаем расположение мячика

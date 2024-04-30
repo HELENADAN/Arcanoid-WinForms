@@ -16,12 +16,16 @@ namespace WindowsFormsApp2
 
         public int[,] field;
 
+        private Platform platform;
         // переменные, которые отвечают за позицию платформы
         public int platformX = 0;
         public int platformY = 0;
+        public int GetPlatformCode()
+        {
+            return platform.GetCode();
+        }
 
-        private Ball ball = new Ball();
-
+        private Ball ball;      
         // переменные, которые отвечают за координаты мячика на карте
         public int BallX;
         public int BallY;
@@ -34,6 +38,18 @@ namespace WindowsFormsApp2
         {
             return ball.GetCode();
         }
+
+        private Block block = new Block();
+        private Block doubleblock = new DoubleBlock();
+        public int GetBlockCode()
+        {
+            return block.GetCode();
+        }
+
+        public int GetDoubleBlockCode()
+        {
+            return doubleblock.GetCode();
+        }
         public void AddLine()
         {
             for (int i = this.Height - 2; i > 0; i--)
@@ -44,11 +60,11 @@ namespace WindowsFormsApp2
                 }
             }
 
-            //GeneratePlatform();
+            //GenerateBlocks();
         }
 
         // генерация препятствий для мячика
-        public void GeneratePlatform()
+        public void GenerateBlocks()
         {
             Random r = new Random();
 
@@ -57,16 +73,21 @@ namespace WindowsFormsApp2
             {
                 for (int j = 0; j < this.Width; j += 2) // так препятствие состоит из 2 частей
                 {
-                    int currPlatform = r.Next(1, 3);
-                    field[i, j] = currPlatform;
-                    field[i, j + 1] = currPlatform + currPlatform * 10; // для определения коллизий с мячом
+                    if (r.Next(1, 3) == 1)
+                    { 
+                        field[i, j] = block.GetCode(); 
+                    }
+                    else field[i, j] = doubleblock.GetCode();
+                    field[i, j + 1] = field[i, j] + field[i, j] * 10;// для определения коллизий с мячом
                 }
             }
 
         }
         // метод для инициализации
         public GameField()
-        {
+        {   
+            ball = new Ball();
+            platform = new Platform();
             // подгрузка картинки
             TextureSet = new Bitmap("C:\\Users\\Елена\\Desktop\\Arcanoid\\WindowsFormsApp2\\img_for_w2\\arca.jpg");
 
@@ -91,9 +112,9 @@ namespace WindowsFormsApp2
 
             // место размещения платформы на карте
 
-            field[platformY, platformX] = 9; // левый конец платформы
-            field[platformY, platformX + 1] = 99;// средина
-            field[platformY, platformX + 2] = 999;// правый конец платформы
+            field[platformY, platformX] = platform.GetCode(); // левый конец платформы
+            field[platformY, platformX + 1] = platform.GetCode() * 10 + field[platformY, platformX];
+            field[platformY, platformX + 2] = platform.GetCode() * 100 + field[platformY, platformX + 1];// правый конец платформы
 
             // задаем расположение мячика
 
@@ -104,7 +125,7 @@ namespace WindowsFormsApp2
             dirX = 1;
             dirY = -1;
 
-            GeneratePlatform(); 
+            GenerateBlocks(); 
         }
 
         // Метод DrawMap() отрисовывает элементы игры на холсте. Берем из набор спрайтов
@@ -114,22 +135,22 @@ namespace WindowsFormsApp2
             {
                 for (int j = 0; j < this.Width; j++)
                 {
-                    if (field[i, j] == 9)
+                    if (field[i, j] == platform.GetCode())
                     {
                         g.DrawImage(TextureSet, new Rectangle(new Point(j * 20, i * 20), new Size(90, 40)), new Rectangle(73, 236, 307, 123), GraphicsUnit.Pixel);
                     }
 
-                    if (field[i, j] == 8)
+                    if (field[i, j] == ball.GetCode())
                     {
                         g.DrawImage(TextureSet, new Rectangle(new Point(j * 20, i * 20), new Size(35, 35)), new Rectangle(419, 195, 125, 125), GraphicsUnit.Pixel);
                     }
 
-                    if (field[i, j] == 1)
+                    if (field[i, j] == doubleblock.GetCode())
                     {
                         g.DrawImage(TextureSet, new Rectangle(new Point(j * 20, i * 20), new Size(40, 20)), new Rectangle(82, 420, 92, 37), GraphicsUnit.Pixel);
                     }
 
-                    if (field[i, j] == 2)
+                    if (field[i, j] == block.GetCode())
                     {
                         g.DrawImage(TextureSet, new Rectangle(new Point(j * 20, i * 20), new Size(40, 20)), new Rectangle(229, 420, 92, 37), GraphicsUnit.Pixel);
                     }

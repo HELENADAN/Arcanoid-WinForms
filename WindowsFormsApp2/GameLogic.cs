@@ -44,31 +44,43 @@ namespace WindowsFormsApp2
                 isColliding = true;
             }
 
-            // столкновение с объектом
+            // столкновение с блоками сверху
+
             if (field.field[field.BallY + field.dirY, field.BallX] != 0)
             {
                 bool addScore = false;
                 isColliding = true;
 
-                if (field.field[field.BallY + field.dirY, field.BallX] > 10 && field.field[field.BallY + field.dirY, field.BallX] < 99)
+                if (field.field[field.BallY + field.dirY, field.BallX] == field.GetBlockCode() * 10 + field.GetBlockCode())
                 {
                     field.field[field.BallY + field.dirY, field.BallX] = 0;
                     field.field[field.BallY + field.dirY, field.BallX - 1] = 0;
                     addScore = true;
 
                 }
-                else if (field.field[field.BallY + field.dirY, field.BallX] < 9)
+                else if (field.field[field.BallY + field.dirY, field.BallX] == field.GetDoubleBlockCode() * 10 + field.GetDoubleBlockCode())
+                {
+                    field.field[field.BallY + field.dirY, field.BallX] = field.GetBlockCode() * 10 + field.GetBlockCode();
+                    field.field[field.BallY + field.dirY, field.BallX - 1] = field.GetBlockCode();
+                }
+
+                else if (field.field[field.BallY + field.dirY, field.BallX] == field.GetBlockCode())
                 {
                     field.field[field.BallY + field.dirY, field.BallX] = 0;
                     field.field[field.BallY + field.dirY, field.BallX + 1] = 0;
                     addScore = true;
+                }
+                else if (field.field[field.BallY + field.dirY, field.BallX] == field.GetDoubleBlockCode())
+                {
+                    field.field[field.BallY + field.dirY, field.BallX] = field.GetBlockCode();
+                    field.field[field.BallY + field.dirY, field.BallX + 1] = field.GetBlockCode() * 10 + field.GetBlockCode();
                 }
 
                 if (addScore)
                 {
                     player.AddScore(50);
 
-                    if (player.GetScore() % 200 == 0 && player.GetScore() > 0)
+                    if (player.GetScore() % 500 == 0 && player.GetScore() > 0)
                     {
                         field.AddLine();
                     }
@@ -86,7 +98,7 @@ namespace WindowsFormsApp2
                 isColliding = true;
                 bool addScore = false;
                 // если происходит колизия с элементом число которого больше 10, то есть это часть платформы == правая
-                if (field.field[field.BallY + field.dirY, field.BallX] > 10 && field.field[field.BallY + field.dirY, field.BallX] < 99)
+                if (field.field[field.BallY + field.dirY, field.BallX] == field.GetBlockCode() * 10 + field.GetBlockCode())
                 {
                     // обнуляем то с чем столкнулись и то что было до 
 
@@ -94,16 +106,30 @@ namespace WindowsFormsApp2
                     field.field[field.BallY, field.BallX + field.dirX - 1] = 0; // зануляем левую часть
                     addScore = true;
                 }
-                else if (field.field[field.BallY + field.dirY, field.BallX] < 9) // значит столкнулись с первой частью препятствия == левая
+                else if(field.field[field.BallY + field.dirY, field.BallX] == field.GetDoubleBlockCode() * 10 + field.GetDoubleBlockCode())
+                {
+                    // обнуляем то с чем столкнулись и то что было до 
+
+                    field.field[field.BallY, field.BallX + field.dirX] = field.GetBlockCode() * 10 + field.GetBlockCode(); 
+                    field.field[field.BallY, field.BallX + field.dirX - 1] = field.GetBlockCode(); // зануляем левую часть
+                    
+                }
+                else if (field.field[field.BallY + field.dirY, field.BallX] == field.GetBlockCode()) // значит столкнулись с первой частью препятствия == левая
                 {
                     field.field[field.BallY, field.BallX + field.dirX] = 0; // зануляем левую часть
                     field.field[field.BallY, field.BallX + field.dirX + 1] = 0; // зануляем правую часть
                     addScore = true;
                 }
+                else if (field.field[field.BallY + field.dirY, field.BallX] == field.GetDoubleBlockCode()) // значит столкнулись с первой частью препятствия == левая
+                {
+                    field.field[field.BallY, field.BallX + field.dirX] = field.GetBlockCode(); // зануляем левую часть
+                    field.field[field.BallY, field.BallX + field.dirX + 1] = field.GetBlockCode() * 10 + field.GetBlockCode(); // зануляем правую часть
+                    
+                }
                 if (addScore)
                 {
                     player.AddScore(50);
-                    if (player.GetScore() % 200 == 0 && player.GetScore() > 0)
+                    if (player.GetScore() % 500 == 0 && player.GetScore() > 0)
                     {
                         field.AddLine();
                     }
@@ -114,8 +140,8 @@ namespace WindowsFormsApp2
             ScoreNubmerLabel.Text = player.GetScore().ToString();
             return isColliding;
 
-        }      
-       
+        }
+
 
     }
 }

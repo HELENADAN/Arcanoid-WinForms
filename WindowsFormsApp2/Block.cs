@@ -8,8 +8,9 @@ namespace WindowsFormsApp2
 {
     internal class Block : GameObj
     {
-        protected int Color;
-        protected int HP;
-        protected int Count;
+        public override int GetCode()
+        {
+            return 1;
+        }
     }
 }
