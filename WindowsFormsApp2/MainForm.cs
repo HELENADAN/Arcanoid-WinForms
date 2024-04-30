@@ -37,17 +37,21 @@ namespace WindowsFormsApp2
         public readonly Bitmap CroppedStartButton1;
         private readonly Bitmap CroppedPauseButton;
         private readonly Bitmap CroppedRestartButton;
-        private readonly Bitmap CroppedEasyButton;
+        private readonly Bitmap CroppedUncheckedButton;
         private readonly Bitmap CroppedInformButton;
         private readonly Bitmap CroppedResaltButton;
         private readonly Bitmap CroppedExitButton;
+        private readonly Bitmap CroppedCheckedButton;
 
-        private readonly Label EasyLevel;
-        private readonly Label MediumLevel;
-        private readonly Label HardLevel;
+        private readonly Label EasyUncheckedLabel;
+        private readonly Label MediumUncheckedLabel;
+        private readonly Label HardUncheckedLabel;
         private readonly Label EasyLevelText;
         private readonly Label MediumLevelText;
         private readonly Label HardLevelText;
+        private readonly Label EasyCheckedLabel;
+        private readonly Label MediumCheckedLabel;
+        private readonly Label HardCheckedLabel;
 
         private readonly Label InformButton;
         private readonly Label ResultButton;
@@ -58,6 +62,9 @@ namespace WindowsFormsApp2
         public int FinalPlayersScore;
         int[] numbersFromFile = new int[11];
 
+        
+        DifficultyLevel selectedLevel = DifficultyLevel.Medium;
+
         // конструктор формы
         public MainForm()
         {
@@ -66,6 +73,7 @@ namespace WindowsFormsApp2
             Createtimer();
             logic = new GameLogic();        
             field = new GameField();
+            field.GenerateBlocks(selectedLevel);
 
             // вычисление размеров окна, которые будут подстраиваться под нашу карту
             this.Width = (field.Width + 8) * 20;
@@ -154,23 +162,29 @@ namespace WindowsFormsApp2
             ToolTip toolTip_res = new ToolTip();
             toolTip_res.SetToolTip(RestartButton, "Начать заново");
 
-            // кнопки Level
+            //////////////////// кнопки Level ///////////////////////////
 
-            Rectangle CroppEasyButton = new Rectangle(604, 240, 35, 35);
 
-            CroppedEasyButton = CropSprite(Image, CroppEasyButton);
+            /////////////////// Easy Lvl ///////////////////////////////
+            
+            Rectangle CroppUncheckedButton = new Rectangle(604, 240, 35, 35);
+            CroppedUncheckedButton = CropSprite(Image, CroppUncheckedButton);
 
-            EasyLevel = new Label
+            Rectangle CroppCheckedButton = new Rectangle(674, 238, 35, 35);
+            CroppedCheckedButton = CropSprite(Image, CroppCheckedButton);
+
+            EasyUncheckedLabel = new Label
             {
                 Location = new Point((field.Width) * 20 + 30, 215),
-                BackgroundImage = CroppedEasyButton,
+                BackgroundImage = CroppedUncheckedButton,
                 AutoSize = false,
                 Size = new Size(20, 20),
                 BackgroundImageLayout = ImageLayout.Stretch
             };
-            this.Controls.Add(EasyLevel);
+            this.Controls.Add(EasyUncheckedLabel);
             ToolTip toolTip_easyl = new ToolTip();
-            toolTip_easyl.SetToolTip(EasyLevel, "Простой уровень");
+            toolTip_easyl.SetToolTip(EasyUncheckedLabel, "Простой уровень");
+            EasyUncheckedLabel.Click += EasyCheck;
 
             EasyLevelText = new Label
             {
@@ -184,18 +198,37 @@ namespace WindowsFormsApp2
             this.Controls.Add(EasyLevelText);
             ToolTip toolTip_easy = new ToolTip();
             toolTip_easy.SetToolTip(EasyLevelText, "Простой уровень");
-
-            MediumLevel = new Label
+            EasyLevelText.Click += EasyCheck;
+           
+            EasyCheckedLabel = new Label
             {
-                Location = new Point((field.Width) * 20 + 30, 235),
-                BackgroundImage = CroppedEasyButton,
+                Location = new Point((field.Width) * 20 + 30, 215),
+                BackgroundImage = CroppedCheckedButton,
                 AutoSize = false,
                 Size = new Size(20, 20),
                 BackgroundImageLayout = ImageLayout.Stretch
             };
-            this.Controls.Add(MediumLevel);
+            this.Controls.Add(EasyCheckedLabel);
+            ToolTip toolTip_easy_choose = new ToolTip();
+            toolTip_easy_choose.SetToolTip(EasyCheckedLabel, "Простой уровень");
+            EasyCheckedLabel.Hide();
+            
+
+            ///////////////////////// Medium Lvl /////////////////////////
+
+            MediumUncheckedLabel = new Label
+            {
+                Location = new Point((field.Width) * 20 + 30, 235),
+                BackgroundImage = CroppedUncheckedButton,
+                AutoSize = false,
+                Size = new Size(20, 20),
+                BackgroundImageLayout = ImageLayout.Stretch
+            };
+            this.Controls.Add(MediumUncheckedLabel);
             ToolTip toolTip_mediuml = new ToolTip();
-            toolTip_mediuml.SetToolTip(MediumLevel, "Средний уровень");
+            toolTip_mediuml.SetToolTip(MediumUncheckedLabel, "Средний уровень");
+            MediumUncheckedLabel.Click += MediumCheck;
+            MediumUncheckedLabel.Hide();
 
             MediumLevelText = new Label
             {
@@ -209,18 +242,35 @@ namespace WindowsFormsApp2
             this.Controls.Add(MediumLevelText);
             ToolTip toolTip_medium = new ToolTip();
             toolTip_medium.SetToolTip(MediumLevelText, "Средний уровень");
+            MediumLevelText.Click += MediumCheck;
 
-            HardLevel = new Label
+            MediumCheckedLabel = new Label
             {
-                Location = new Point((field.Width) * 20 + 30, 255),
-                BackgroundImage = CroppedEasyButton,
+                Location = new Point((field.Width) * 20 + 30, 235),
+                BackgroundImage = CroppedCheckedButton,
                 AutoSize = false,
                 Size = new Size(20, 20),
                 BackgroundImageLayout = ImageLayout.Stretch
             };
-            this.Controls.Add(HardLevel);
+            this.Controls.Add(MediumCheckedLabel);
+            ToolTip toolTip_medium_choose = new ToolTip();
+            toolTip_medium_choose.SetToolTip(MediumCheckedLabel, "Средний уровень");
+            MediumCheckedLabel.Show();
+
+            ///////////////////////// Hard Lvl /////////////////////////
+            
+            HardUncheckedLabel = new Label
+            {
+                Location = new Point((field.Width) * 20 + 30, 255),
+                BackgroundImage = CroppedUncheckedButton,
+                AutoSize = false,
+                Size = new Size(20, 20),
+                BackgroundImageLayout = ImageLayout.Stretch
+            };
+            this.Controls.Add(HardUncheckedLabel);
             ToolTip toolTip_hardl = new ToolTip();
-            toolTip_hardl.SetToolTip(HardLevel, "Сложный уровень");
+            toolTip_hardl.SetToolTip(HardUncheckedLabel, "Сложный уровень");
+            HardUncheckedLabel.Click += HardCheck;
 
             HardLevelText = new Label
             {
@@ -233,7 +283,21 @@ namespace WindowsFormsApp2
             };
             this.Controls.Add(HardLevelText);
             ToolTip toolTip_hard = new ToolTip();
-            toolTip_hard.SetToolTip(HardLevelText, "Сложный уровень");
+            toolTip_hard.SetToolTip(HardLevelText, "Сложный уровень");  
+            HardLevelText.Click += HardCheck;
+
+            HardCheckedLabel = new Label
+            {
+                Location = new Point((field.Width) * 20 + 30, 255),
+                BackgroundImage = CroppedCheckedButton,
+                AutoSize = false,
+                Size = new Size(20, 20),
+                BackgroundImageLayout = ImageLayout.Stretch
+            };
+            this.Controls.Add(HardCheckedLabel);
+            ToolTip toolTip_hard_choose = new ToolTip();
+            toolTip_hard_choose.SetToolTip(HardCheckedLabel, "Сложный уровень");
+            HardCheckedLabel.Hide();
 
             // кнопка Справка
 
@@ -341,6 +405,45 @@ namespace WindowsFormsApp2
             
         }
 
+        private void EasyCheck(object sender, EventArgs e)
+        {           
+            EasyCheckedLabel.Show();
+            EasyUncheckedLabel.Hide();
+            MediumCheckedLabel.Hide();
+            MediumUncheckedLabel.Show();
+            HardCheckedLabel.Hide();
+            HardUncheckedLabel.Show();
+            selectedLevel = DifficultyLevel.Easy;
+            field.GenerateBlocks(selectedLevel);
+            Invalidate();
+
+        }
+
+        private void MediumCheck(object sender, EventArgs e)
+        {
+            EasyCheckedLabel.Hide();
+            EasyUncheckedLabel.Show();
+            MediumCheckedLabel.Show();
+            MediumUncheckedLabel.Hide();
+            HardCheckedLabel.Hide();
+            HardUncheckedLabel.Show();
+            selectedLevel = DifficultyLevel.Medium;
+            field.GenerateBlocks(selectedLevel);
+            Invalidate();
+        }
+        private void HardCheck(object sender, EventArgs e)
+        {           
+            EasyCheckedLabel.Hide();
+            EasyUncheckedLabel.Show();
+            MediumCheckedLabel.Hide();
+            MediumUncheckedLabel.Show();
+            HardCheckedLabel.Show();
+            HardUncheckedLabel.Hide();
+            selectedLevel = DifficultyLevel.Hard;
+            field.GenerateBlocks(selectedLevel);
+            Invalidate();
+        }
+
         //для элемента timer1 
         public void Createtimer()
         {           
@@ -356,6 +459,34 @@ namespace WindowsFormsApp2
                 ((Label)sender).BackgroundImage = CroppedPauseButton;
                 field.field[field.BallY, field.BallX] = field.GetBallCode();
                 timer1.Start();
+
+                switch (selectedLevel)
+                {
+                    case DifficultyLevel.Easy:
+                        MediumCheckedLabel.Hide();
+                        MediumUncheckedLabel.Hide();
+                        MediumLevelText.Hide();
+                        HardCheckedLabel.Hide();
+                        HardUncheckedLabel.Hide();
+                        HardLevelText.Hide();
+                        break;
+                    case DifficultyLevel.Medium:
+                        EasyCheckedLabel.Hide();
+                        EasyUncheckedLabel.Hide();
+                        EasyLevelText.Hide();
+                        HardCheckedLabel.Hide();
+                        HardUncheckedLabel.Hide();
+                        HardLevelText.Hide();
+                        break;
+                    case DifficultyLevel.Hard:
+                        MediumCheckedLabel.Hide();
+                        MediumUncheckedLabel.Hide();
+                        MediumLevelText.Hide();
+                        EasyCheckedLabel.Hide();
+                        EasyUncheckedLabel.Hide();
+                        EasyLevelText.Hide();
+                        break;
+                }
             }
             else 
             {
@@ -363,6 +494,34 @@ namespace WindowsFormsApp2
                 Game_over.Hide();
                 timer1.Stop();
                 PauseMessage.Show();
+
+                switch (selectedLevel)
+                {
+                    case DifficultyLevel.Easy:
+                        MediumCheckedLabel.Hide();
+                        MediumUncheckedLabel.Show();
+                        MediumLevelText.Show();
+                        HardCheckedLabel.Hide();
+                        HardUncheckedLabel.Show();
+                        HardLevelText.Show();
+                        break;
+                    case DifficultyLevel.Medium:
+                        EasyCheckedLabel.Hide();
+                        EasyUncheckedLabel.Show();
+                        EasyLevelText.Show();
+                        HardCheckedLabel.Hide();
+                        HardUncheckedLabel.Show();
+                        HardLevelText.Show();
+                        break;
+                    case DifficultyLevel.Hard:
+                        MediumCheckedLabel.Hide();
+                        MediumUncheckedLabel.Show();
+                        MediumLevelText.Show();
+                        EasyCheckedLabel.Hide();
+                        EasyUncheckedLabel.Show();
+                        EasyLevelText.Show();
+                        break;
+                }
             }
         }
         public void RestartButtonClick(object sender, EventArgs e)

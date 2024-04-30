@@ -50,6 +50,9 @@ namespace WindowsFormsApp2
         {
             return doubleblock.GetCode();
         }
+
+        DifficultyLevel selectedLevel = DifficultyLevel.Medium;
+
         public void AddLine()
         {
             for (int i = this.Height - 2; i > 0; i--)
@@ -60,28 +63,81 @@ namespace WindowsFormsApp2
                 }
             }
 
-            //GenerateBlocks();
+            switch (selectedLevel)
+            {
+                case DifficultyLevel.Easy:
+                    for (int j = 0; j < this.Width; j += 2) // так препятствие состоит из 2 частей
+                        {
+                            field[0, j] = block.GetCode();
+                            field[0, j + 1] = field[0, j] + field[0, j] * 10;// для определения коллизий с мячом
+                        }                  
+                    break;
+                case DifficultyLevel.Medium:
+                    Random r = new Random();
+                    // заполняем карту на треть платформами для игры
+                    for (int j = 0; j < this.Width; j += 2) // так препятствие состоит из 2 частей
+                    {
+                        if (r.Next(1, 3) == 1)
+                        {
+                            field[0, j] = block.GetCode();
+                        }
+                        else field[0, j] = doubleblock.GetCode();
+                        field[0, j + 1] = field[0, j] + field[0, j] * 10;// для определения коллизий с мячом
+                    }
+                    break;
+                case DifficultyLevel.Hard:
+                    for (int j = 0; j < this.Width; j += 2) // так препятствие состоит из 2 частей
+                    {
+                        field[0, j] = doubleblock.GetCode();
+                        field[0, j + 1] = field[0, j] + field[0, j] * 10;// для определения коллизий с мячом
+                    }
+                    break;
+            }
         }
 
         // генерация препятствий для мячика
-        public void GenerateBlocks()
+        public void GenerateBlocks(DifficultyLevel level)
         {
-            Random r = new Random();
-
-            // заполняем карту на треть платформами для игры
-            for (int i = 0; i < this.Height / 3; i++)
+            selectedLevel = level;
+            switch (level) 
             {
-                for (int j = 0; j < this.Width; j += 2) // так препятствие состоит из 2 частей
-                {
-                    if (r.Next(1, 3) == 1)
-                    { 
-                        field[i, j] = block.GetCode(); 
+                case DifficultyLevel.Easy:
+                    for (int i = 0; i < this.Height / 3; i++)
+                    {
+                        for (int j = 0; j < this.Width; j += 2) // так препятствие состоит из 2 частей
+                        {                           
+                           field[i, j] = block.GetCode();
+                           field[i, j + 1] = field[i, j] + field[i, j] * 10;// для определения коллизий с мячом
+                        }
                     }
-                    else field[i, j] = doubleblock.GetCode();
-                    field[i, j + 1] = field[i, j] + field[i, j] * 10;// для определения коллизий с мячом
-                }
+                    break;
+                case DifficultyLevel.Medium:
+                    Random r = new Random();
+                    // заполняем карту на треть платформами для игры
+                    for (int i = 0; i < this.Height / 3; i++)
+                    {
+                        for (int j = 0; j < this.Width; j += 2) // так препятствие состоит из 2 частей
+                        {
+                            if (r.Next(1, 3) == 1)
+                            {
+                                field[i, j] = block.GetCode();
+                            }
+                            else field[i, j] = doubleblock.GetCode();
+                            field[i, j + 1] = field[i, j] + field[i, j] * 10;// для определения коллизий с мячом
+                        }
+                    }
+                    break;
+                case DifficultyLevel.Hard:
+                    for (int i = 0; i < this.Height / 3; i++)
+                    {
+                        for (int j = 0; j < this.Width; j += 2) // так препятствие состоит из 2 частей
+                        {
+                            field[i, j] = doubleblock.GetCode();
+                            field[i, j + 1] = field[i, j] + field[i, j] * 10;// для определения коллизий с мячом
+                        }
+                    }
+                    break;
             }
-
         }
         // метод для инициализации
         public GameField()
@@ -125,7 +181,7 @@ namespace WindowsFormsApp2
             dirX = 1;
             dirY = -1;
 
-            GenerateBlocks(); 
+            
         }
 
         // Метод DrawMap() отрисовывает элементы игры на холсте. Берем из набор спрайтов
