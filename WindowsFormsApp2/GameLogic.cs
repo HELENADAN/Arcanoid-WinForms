@@ -44,32 +44,44 @@ namespace WindowsFormsApp2
                 isColliding = true;
             }
 
-            // столкновение с блоками сверху
+           
+            // если значение элемента массива field (представляющего игровое поле) в позиции, куда направлено движение мяча, не равно 0
+            // значит произошло столкновение с блоками сверху (1 11 или 2 22)
 
             if (field.field[field.BallY + field.dirY, field.BallX] != 0)
             {
                 bool addScore = false;
                 isColliding = true;
 
+                // Если столкнулся с одинарным блоком (число которого == 11 == правая часть), то блок уничтожается, а игроку начисляются очки
+
                 if (field.field[field.BallY + field.dirY, field.BallX] == field.GetBlockCode() * 10 + field.GetBlockCode())
-                {
+                {   
+                    // уничтожаем блок
                     field.field[field.BallY + field.dirY, field.BallX] = 0;
                     field.field[field.BallY + field.dirY, field.BallX - 1] = 0;
-                    addScore = true;
+                    addScore = true;//добавить очки
 
                 }
+
+                // Если столкнулся с двойным блоком (число - 22 - право), то двойной блок заменяется на одинарный (число - 11 - право), а соседний блок (число 2 - лево) также заменяется на одинарный (число - 1 - лево)
+                
                 else if (field.field[field.BallY + field.dirY, field.BallX] == field.GetDoubleBlockCode() * 10 + field.GetDoubleBlockCode())
                 {
                     field.field[field.BallY + field.dirY, field.BallX] = field.GetBlockCode() * 10 + field.GetBlockCode();
                     field.field[field.BallY + field.dirY, field.BallX - 1] = field.GetBlockCode();
                 }
 
+                // Если столкнулся с одинарным блоком (число которого == 1 == лево), то блок уничтожается, а игроку начисляются очки
+
                 else if (field.field[field.BallY + field.dirY, field.BallX] == field.GetBlockCode())
-                {
+                {   // уничтожаем блок
                     field.field[field.BallY + field.dirY, field.BallX] = 0;
                     field.field[field.BallY + field.dirY, field.BallX + 1] = 0;
-                    addScore = true;
+                    addScore = true;//добавить очки
                 }
+
+                // Если столкнулся с двойным блоком (число - 2 - лево), то двойной блок заменяется на одинарный (число - 1 - лево), а соседний блок (число - 22 - право) также заменяется на одинарный (число - 11 - право)
                 else if (field.field[field.BallY + field.dirY, field.BallX] == field.GetDoubleBlockCode())
                 {
                     field.field[field.BallY + field.dirY, field.BallX] = field.GetBlockCode();
@@ -87,45 +99,53 @@ namespace WindowsFormsApp2
 
                 }
 
-                field.dirY *= -1; // мяч полетит в другю сторону
+                field.dirY *= -1; // мяч полетит в другую сторону
             }
 
-            // если слева или справа не 0, есть какой то объект, то нужно сменить направление
-            // реализация исчезновения платформ сверху
+            // если значение элемента массива field (представляющего игровое поле) в позиции, куда направлено движение мяча, не равно 0
+            // значит произошло столкновение с блоками сверху
+
             if (field.field[field.BallY, field.BallX + field.dirX] != 0)
             {
 
                 isColliding = true;
                 bool addScore = false;
-                // если происходит колизия с элементом число которого больше 10, то есть это часть платформы == правая
+
+                // Если столкнулся с одинарным блоком (число которого == 11 == правая часть блока), то блок уничтожается, а игроку начисляются очки
+
                 if (field.field[field.BallY + field.dirY, field.BallX] == field.GetBlockCode() * 10 + field.GetBlockCode())
                 {
-                    // обнуляем то с чем столкнулись и то что было до 
-
+                    // уничтожаем блок
                     field.field[field.BallY, field.BallX + field.dirX] = 0; // зануляем правую часть
                     field.field[field.BallY, field.BallX + field.dirX - 1] = 0; // зануляем левую часть
-                    addScore = true;
+                    addScore = true;//добавить очки
                 }
-                else if(field.field[field.BallY + field.dirY, field.BallX] == field.GetDoubleBlockCode() * 10 + field.GetDoubleBlockCode())
+                // если происходит колизия с элементом число которого == 22 == правая часть блока
+                else if (field.field[field.BallY + field.dirY, field.BallX] == field.GetDoubleBlockCode() * 10 + field.GetDoubleBlockCode())
                 {
-                    // обнуляем то с чем столкнулись и то что было до 
-
+                    // уменьшаем прочность на один у правой и левой части
                     field.field[field.BallY, field.BallX + field.dirX] = field.GetBlockCode() * 10 + field.GetBlockCode(); 
-                    field.field[field.BallY, field.BallX + field.dirX - 1] = field.GetBlockCode(); // зануляем левую часть
+                    field.field[field.BallY, field.BallX + field.dirX - 1] = field.GetBlockCode(); 
                     
                 }
-                else if (field.field[field.BallY + field.dirY, field.BallX] == field.GetBlockCode()) // значит столкнулись с первой частью препятствия == левая
-                {
+
+                // Если столкнулся с одинарным блоком (число которого == 1 == левая часть), то блок уничтожается, а игроку начисляются очки
+                
+                else if (field.field[field.BallY + field.dirY, field.BallX] == field.GetBlockCode())
+                {   // уничтожаем блок
                     field.field[field.BallY, field.BallX + field.dirX] = 0; // зануляем левую часть
                     field.field[field.BallY, field.BallX + field.dirX + 1] = 0; // зануляем правую часть
-                    addScore = true;
+                    addScore = true;//добавить очки
                 }
-                else if (field.field[field.BallY + field.dirY, field.BallX] == field.GetDoubleBlockCode()) // значит столкнулись с первой частью препятствия == левая
-                {
-                    field.field[field.BallY, field.BallX + field.dirX] = field.GetBlockCode(); // зануляем левую часть
-                    field.field[field.BallY, field.BallX + field.dirX + 1] = field.GetBlockCode() * 10 + field.GetBlockCode(); // зануляем правую часть
+                // если происходит колизия с элементом число которого == 2 == левая часть
+
+                else if (field.field[field.BallY + field.dirY, field.BallX] == field.GetDoubleBlockCode())
+                {   // уменьшаем прочность на один у правой и левой части
+                    field.field[field.BallY, field.BallX + field.dirX] = field.GetBlockCode(); 
+                    field.field[field.BallY, field.BallX + field.dirX + 1] = field.GetBlockCode() * 10 + field.GetBlockCode();
                     
                 }
+
                 if (addScore)
                 {
                     player.AddScore(50);
@@ -139,9 +159,6 @@ namespace WindowsFormsApp2
             ScoreLabel.Text = "SCORES"; // обновим счетчик
             ScoreNubmerLabel.Text = player.GetScore().ToString();
             return isColliding;
-
         }
-
-
     }
 }
