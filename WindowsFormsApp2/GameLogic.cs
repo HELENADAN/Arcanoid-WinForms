@@ -10,7 +10,7 @@ namespace WindowsFormsApp2
 
     class GameLogic
     {
-        Player player = new Player();
+        readonly Player player = new Player();
         public int GetPlayerScore()
         {
             return player.GetScore();
@@ -24,6 +24,11 @@ namespace WindowsFormsApp2
         public int DamagePlayer()
         {
             return player.SubtructLife();
+        }
+
+        public int RefreshPlayerScore()
+        {
+            return player.RefreshScore();
         }
         public bool IsCollade(GameField field, Label ScoreLabel, Label ScoreNubmerLabel)
         {

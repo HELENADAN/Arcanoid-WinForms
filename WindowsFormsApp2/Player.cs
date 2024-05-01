@@ -33,10 +33,18 @@ namespace WindowsFormsApp2
             return score;
         }
 
+        public int RefreshScore()
+        {
+            score = 0;
+            return score;
+        }
+
         public int SubtructLife()
         {   
             if (lives>0) lives--;
             return lives;
         }
+
+        
     }
 }

@@ -6,6 +6,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Remoting.Messaging;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
@@ -20,7 +21,6 @@ namespace WindowsFormsApp2
 {   // В этом коде создается форма с игровым полем и элементами, такими как шарик и платформа. 
     public partial class MainForm : Form
     {
-
         GameField field;
         GameLogic logic;
 
@@ -56,13 +56,17 @@ namespace WindowsFormsApp2
         private readonly Label InformButton;
         private readonly Label ResultButton;
         private readonly Label ExitButton;
+        private readonly Label GoBallLabel;
         private Image Image { get => image; set => image = value; }
 
         string filePath = "C:\\Users\\Елена\\Desktop\\Arcanoid\\WindowsFormsApp2\\Results.txt";
         public int FinalPlayersScore;
         int[] numbersFromFile = new int[11];
 
-        
+        public bool blinking = false;
+        private bool ballMoves = false;
+        private bool paused = false;
+
         DifficultyLevel selectedLevel = DifficultyLevel.Medium;
 
         // конструктор формы
@@ -338,9 +342,7 @@ namespace WindowsFormsApp2
             toolTip_result.SetToolTip(ResultButton, "Лучшие результаты");
 
             // кнопка Выход
-
             Rectangle CroppExitButton = new Rectangle(818, 347, 115, 115);
-
             CroppedExitButton = CropSprite(Image, CroppExitButton);
 
             ExitButton = new Label
@@ -382,7 +384,24 @@ namespace WindowsFormsApp2
             Game_over.Hide();
             this.Controls.Add(Game_over);  // добавляем метки в форму --- в коллекцию элементов управления в форме
 
-
+            // надпись с пояснениями как начать игру
+            GoBallLabel = new Label
+            {
+                Location = new Point((field.Width/2) +20, (field.Height) * 8),
+                Text = "Нажмите пробел для запуска мяча",
+                Font = new Font("Times new roman", 15, FontStyle.Regular),
+                BackColor = Color.Transparent,
+                ForeColor = Color.Black,
+                AutoSize = true
+            };
+            GoBallLabel.Hide();
+            this.Controls.Add(GoBallLabel);  // добавляем метки в форму --- в коллекцию элементов управления в форме
+                                             // Start the blinking
+           
+            // обработчик событий для кнопок для движения платформы
+            this.KeyDown += new KeyEventHandler(InputCheck);
+            timer_Tick(null, null);
+            
             try
             {
                 using (StreamReader reader = new StreamReader(filePath))
@@ -397,12 +416,20 @@ namespace WindowsFormsApp2
                     }
                 }
             }
-            catch(FileNotFoundException){}
-            
-            // обработчик событий для кнопок для движения платформы
-            this.KeyDown += new KeyEventHandler(InputCheck);
-
-            
+            catch(FileNotFoundException){}           
+        }
+        public void timer_Tick(object sender, EventArgs e)
+        {
+        if (blinking)
+        {
+            // Toggle the label visibility
+            GoBallLabel.Visible = !GoBallLabel.Visible;
+        }
+            // Schedule the next tick
+            System.Threading.Timer timer = new System.Threading.Timer((state) =>
+            {
+                timer_Tick(null, null);
+            }, null, 400, Timeout.Infinite);
         }
 
         private void EasyCheck(object sender, EventArgs e)
@@ -418,7 +445,6 @@ namespace WindowsFormsApp2
             Invalidate();
 
         }
-
         private void MediumCheck(object sender, EventArgs e)
         {
             EasyCheckedLabel.Hide();
@@ -454,11 +480,22 @@ namespace WindowsFormsApp2
         {
             if (((Label)sender).BackgroundImage == CroppedStartButton1 ) 
             {
+                paused = false;
                 Game_over.Hide();
                 PauseMessage.Hide();
+                GoBallLabel.Show();
                 ((Label)sender).BackgroundImage = CroppedPauseButton;
+                // До момента нажатия моргает
+                blinking = true;
+
+                // задаем расположение мячика
+
+                field.BallY = field.platformY - 2; // на строчку выше платформы расположен мяч
+                field.BallX = field.platformX + 1; // мяч размещен по середине платформы
+
+                // место размещения мяча на карте
                 field.field[field.BallY, field.BallX] = field.GetBallCode();
-                timer1.Start();
+                Invalidate();
 
                 switch (selectedLevel)
                 {
@@ -491,9 +528,12 @@ namespace WindowsFormsApp2
             else 
             {
                 ((Label)sender).BackgroundImage = CroppedStartButton1;
+                paused = true;
                 Game_over.Hide();
                 timer1.Stop();
                 PauseMessage.Show();
+                GoBallLabel.Hide();
+                blinking = false;
 
                 switch (selectedLevel)
                 {
@@ -525,10 +565,10 @@ namespace WindowsFormsApp2
             }
         }
         public void RestartButtonClick(object sender, EventArgs e)
-        {
+        {   
+            paused = false;
             Application.Restart();
         }
-
         public void InformButtonClick(object sender, EventArgs e)
         {
             // Создание формы
@@ -628,40 +668,65 @@ namespace WindowsFormsApp2
 
             return croppedImage;
         }
-
         // движение платформы
         private void InputCheck(object sender, KeyEventArgs e)
         {
+            if (!paused) 
+            {
+                // какая клавиша нажата
+                // очистим предыдущее место размещение платформы
+                field.field[field.platformY, field.platformX] = 0;
+                field.field[field.platformY, field.platformX + 1] = 0;
+                field.field[field.platformY, field.platformX + 2] = 0;
 
-            // какая клавиша нажата
-            // очистим предыдущее место размещение платформы
-            field.field[field.platformY, field.platformX] = 0;
-            field.field[field.platformY, field.platformX + 1] = 0;
-            field.field[field.platformY, field.platformX + 2] = 0;
+                if (!ballMoves)
+                {
+                    // место размещения мяча на карте
+                    field.field[field.BallY, field.BallX] = 0;
+                }
 
-            switch (e.KeyCode)
-            {   // если нажали кнопку вправо
-                case Keys.Right:
+                switch (e.KeyCode)
+                {   // если нажали кнопку вправо
+                    case Keys.Right:
                         if (field.platformX + 4 < field.Width - 1)
-                        // сдвинем координату платформы на единичку по оси x 
-                             field.platformX+=2;
-                    break;                 
-                // если нажали кнопку влево
-                case Keys.Left:
-                    
-                    if (field.platformX > 1)
-                        // сдвинем координату платформы на единичку по оси x
-                        field.platformX -= 2;
-                    break;                                     
+                            // сдвинем координату платформы на единичку по оси x 
+                            field.platformX += 2;
+                        break;
+                    // если нажали кнопку влево
+                    case Keys.Left:
+                        if (field.platformX > 1)
+                            // сдвинем координату платформы на единичку по оси x
+                            field.platformX -= 2;
+                        break;
+                    //если нажали пробел
+                    case Keys.Space:
+                        if (!ballMoves)
+                        {
+                            GoBallLabel.Hide();
+                            // timer1.Start();
+                            Continue();
+                            blinking = false;
+                            ballMoves = true;
+                        }
+                        break;
+                }
+
+                //разместить платформу с учетом новых координат
+                field.field[field.platformY, field.platformX] = field.GetPlatformCode(); // левый конец платформы
+                field.field[field.platformY, field.platformX + 1] = field.GetPlatformCode() * 10 + field.field[field.platformY, field.platformX];// середина
+                field.field[field.platformY, field.platformX + 2] = field.GetPlatformCode() * 100 + field.field[field.platformY, field.platformX + 1];// правый конец платформы
+
+                if (!ballMoves)
+                {   
+                    // задаем расположение мячика
+                    field.BallX = field.platformX + 1; // мяч размещен по середине платформы
+
+                    // место размещения мяча на карте
+                    field.field[field.BallY, field.BallX] = field.GetBallCode();
+                }
+                Invalidate();
             }
-
-            //разместить платформу с учетом новых координат
-            field.field[field.platformY, field.platformX] = field.GetPlatformCode(); // левый конец платформы
-            field.field[field.platformY, field.platformX + 1] = field.GetPlatformCode() * 10 + field.field[field.platformY, field.platformX];// середина
-            field.field[field.platformY, field.platformX + 2] = field.GetPlatformCode() * 100 + field.field[field.platformY, field.platformX + 1];// правый конец платформы
-
         }
-      
         // обработка коллизий мяча и обновление карты 
         public void Update(object sender, EventArgs e)
         {
@@ -679,20 +744,42 @@ namespace WindowsFormsApp2
             if (field.BallY + field.dirY > field.Height - 1)
             {
                 logic.DamagePlayer();
-                
-                if (logic.GetPlayerLives() <= 0)                  
+                ballMoves = false;
+                timer1.Stop();
+
+                if (logic.GetPlayerLives() <= 0)
                 {
+                    paused = true;
                     FinalPlayersScore = logic.GetPlayerScore();
                     AddResults(FinalPlayersScore);
-                    timer1.Stop();
+                    ScoreNumberLabel.Text = "0";
+                    logic.RefreshPlayerScore();
+                    LivesLabel.Text = "×_×";
+                    
                     StartPauseButton.BackgroundImage = CroppedStartButton1;
                     field = new GameField();
-                    Game_over.Show();                   
+                    Game_over.Show();
                 }
                 else
                 {
-                    Continue();
-                }
+                    LivesLabel.Text = "";
+                    for (int i = 0; i < logic.GetPlayerLives(); i++)
+                        LivesLabel.Text += "♥";
+
+                    // место размещения мяча на карте
+                    field.field[field.BallY, field.BallX] = 0;
+
+                    // задаем расположение мячика
+                    field.BallX = field.platformX + 1; // мяч размещен по середине платформы
+                    field.BallY = field.platformY - 1;
+
+                    // место размещения мяча на карте
+                    field.field[field.BallY, field.BallX] = field.GetBallCode();
+                    GoBallLabel.Show();
+                    blinking = true;
+                    timer_Tick(null, null);
+                    Invalidate();
+                }              
             }
         }
         public void AddResults(int FinalPlayersScore)
@@ -727,7 +814,6 @@ namespace WindowsFormsApp2
             }
 
         }
-
         private void ResultButtonClick(object sender, EventArgs e)
         {
             // Создание формы
@@ -791,7 +877,6 @@ namespace WindowsFormsApp2
         public void Continue()
         {
             timer1.Interval = 50;// нужна для мячика
-            ScoreLabel.Text = "Score";
             ScoreNumberLabel.Text = logic.GetPlayerScore().ToString();
             LivesLabel.Text = "";
             for (int i = 0; i < logic.GetPlayerLives(); i++)
@@ -803,14 +888,6 @@ namespace WindowsFormsApp2
             field.field[field.platformY, field.platformX + 1] = field.GetPlatformCode() * 10 + field.field[field.platformY, field.platformX];// середина
             field.field[field.platformY, field.platformX + 2] = field.GetPlatformCode() * 100 + field.field[field.platformY, field.platformX + 1];// правый конец платформы
             field.field[field.BallY, field.BallX] = 0;
-
-            // задаем расположение мячика
-
-            field.BallY = field.platformY - 4; // на строчку выше платформы расположен мяч
-            field.BallX = field.platformX + 1; // мяч размещен по середине платформы
-
-            // место размещения мяча на карте
-            field.field[field.BallY, field.BallX] = field.GetBallCode();
 
             // реализация движения мячика
             field.dirX = 1;
