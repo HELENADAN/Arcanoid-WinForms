@@ -45,6 +45,11 @@ namespace WindowsFormsApp2
             return lives;
         }
 
-        
+        public int RefreshLife()
+        {
+            lives = 5;
+            return lives;
+        }
+
     }
 }

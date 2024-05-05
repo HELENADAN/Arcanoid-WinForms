@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace WindowsFormsApp2
-{   // находится ли мячик вне границ массива + столкновение с чем-либо
-
+{   
+    // находится ли мячик вне границ массива + столкновение с чем-либо
     class GameLogic
     {
         readonly Player player = new Player();
@@ -29,6 +29,11 @@ namespace WindowsFormsApp2
         public int RefreshPlayerScore()
         {
             return player.RefreshScore();
+        }
+
+        public int RefreshPlayerLife()
+        {
+            return player.RefreshLife();
         }
         public bool IsCollade(GameField field, Label ScoreLabel, Label ScoreNubmerLabel)
         {

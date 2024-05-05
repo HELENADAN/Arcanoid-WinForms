@@ -10,14 +10,15 @@ namespace WindowsFormsApp2
     internal class GameField
     {       
         public Image TextureSet; // картинка для игры
+
         // карта, ее размер, двумерный массив = игровое поле
         public readonly int Width;  
         public readonly int Height;
-
         public int[,] field;
 
         private Platform platform;
-        // переменные, которые отвечают за позицию платформы
+
+        // переменные, которые отвечают за текущую позицию платформы
         public int platformX = 0;
         public int platformY = 0;
         public int GetPlatformCode()
@@ -25,27 +26,26 @@ namespace WindowsFormsApp2
             return platform.GetCode();
         }
 
-        private Ball ball;      
-        // переменные, которые отвечают за координаты мячика на карте
+        private Ball ball;
+        
+        // переменные, которые отвечают за текущие координаты мячика на карте
         public int BallX;
         public int BallY;
 
-        // переменные, которые отвечают за координаты при движении шарика
+        // переменные, которые отвечают за направление движения мячика 
         public int dirX = 0;
         public int dirY = 0;
-        // добавление сложности == смещаем все линии вниз и добавляем одну лининю
+
         public int GetBallCode()
         {
             return ball.GetCode();
         }
-
         private Block block = new Block();
         private Block doubleblock = new DoubleBlock();
         public int GetBlockCode()
         {
             return block.GetCode();
         }
-
         public int GetDoubleBlockCode()
         {
             return doubleblock.GetCode();
@@ -53,6 +53,7 @@ namespace WindowsFormsApp2
 
         DifficultyLevel selectedLevel = DifficultyLevel.Medium;
 
+        // добавление сложности, смещаем все линии вниз и добавляем одну линию, добавляем блоки в зависимости от уровня сложности!
         public void AddLine()
         {
             for (int i = this.Height - 2; i > 0; i--)
@@ -95,7 +96,7 @@ namespace WindowsFormsApp2
             }
         }
 
-        // генерация препятствий для мячика
+        // генерация препятствий для мячика в зависимости от уровня сложности
         public void GenerateBlocks(DifficultyLevel level)
         {
             selectedLevel = level;
@@ -139,11 +140,13 @@ namespace WindowsFormsApp2
                     break;
             }
         }
-        // метод для инициализации
+
+        // конструктор игрового поля
         public GameField()
         {   
             ball = new Ball();
             platform = new Platform();
+
             // подгрузка картинки
             TextureSet = new Bitmap("C:\\Users\\Елена\\Desktop\\Arcanoid\\WindowsFormsApp2\\img_for_w2\\arca.jpg");
 
@@ -161,7 +164,7 @@ namespace WindowsFormsApp2
                 }
             }
 
-            // расположение платформы относительно карты --- по центру нужно
+            // расположение платформы относительно карты - по центру
 
             platformX = (this.Width - 1) / 2;
             platformY = this.Height - 1;
@@ -180,11 +183,9 @@ namespace WindowsFormsApp2
             // реализация движения мячика
             dirX = 1;
             dirY = -1;
-
-            
         }
 
-        // Метод DrawMap() отрисовывает элементы игры на холсте. Берем из набор спрайтов
+        // Метод DrawMap() рисует элементы игры на холсте. Берем из спрайта
         public void DrawMap(Graphics g)
         {
             for (int i = 0; i < this.Height; i++)
@@ -215,7 +216,7 @@ namespace WindowsFormsApp2
             
         }
 
-        // здесь основная территория геймплея
+        // здесь основная территория геймплея - прямоугольник
         public void DrawArea(Graphics g)
         {
             g.DrawRectangle(Pens.Black, new Rectangle(0, 0, this.Width * 20, this.Height * 20));

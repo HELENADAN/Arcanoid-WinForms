@@ -18,23 +18,24 @@ using ToolTip = System.Windows.Forms.ToolTip;
 
 namespace WindowsFormsApp2
 
-{   // В этом коде создается форма с игровым полем и элементами, такими как шарик и платформа. 
+{   
+    // В этом коде создается форма с игровым полем и элементами
     public partial class MainForm : Form
     {
         GameField field;
         GameLogic logic;
 
-        public readonly Label ScoreLabel;
-        public readonly Label ScoreNumberLabel;
-        public readonly Label LivesLabel;
-        public readonly Label PauseMessage;
-        public readonly Label Game_over;
+        private readonly Label ScoreLabel;
+        private readonly Label ScoreNumberLabel;
+        private readonly Label LivesLabel;
+        private readonly Label PauseMessage;
+        private readonly Label Game_over;
 
         private Image image = Image.FromFile("C:\\Users\\Елена\\Desktop\\Arcanoid\\WindowsFormsApp2\\img_for_w2\\arca.jpg");
-        public readonly Label StartPauseButton;
+        private readonly Label StartPauseButton;
         private readonly Label RestartButton;
 
-        public readonly Bitmap CroppedStartButton1;
+        private readonly Bitmap CroppedStartButton1;
         private readonly Bitmap CroppedPauseButton;
         private readonly Bitmap CroppedRestartButton;
         private readonly Bitmap CroppedUncheckedButton;
@@ -59,11 +60,11 @@ namespace WindowsFormsApp2
         private readonly Label GoBallLabel;
         private Image Image { get => image; set => image = value; }
 
-        string filePath = "C:\\Users\\Елена\\Desktop\\Arcanoid\\WindowsFormsApp2\\Results.txt";
-        public int FinalPlayersScore;
-        int[] numbersFromFile = new int[11];
+        private string filePath = "C:\\Users\\Елена\\Desktop\\Arcanoid\\WindowsFormsApp2\\Results.txt";
+        private int FinalPlayersScore;
+        private int[] numbersFromFile = new int[11];
 
-        public bool blinking = false;
+        private bool blinking = false;
         private bool ballMoves = false;
         private bool paused = false;
 
@@ -400,7 +401,7 @@ namespace WindowsFormsApp2
            
             // обработчик событий для кнопок для движения платформы
             this.KeyDown += new KeyEventHandler(InputCheck);
-            timer_Tick(null, null);
+            Timer_Tick(null, null);
             
             try
             {
@@ -418,7 +419,9 @@ namespace WindowsFormsApp2
             }
             catch(FileNotFoundException){}           
         }
-        public void timer_Tick(object sender, EventArgs e)
+
+        //для элемента timer1 
+        public void Timer_Tick(object sender, EventArgs e)
         {
         if (blinking)
         {
@@ -428,10 +431,15 @@ namespace WindowsFormsApp2
             // Schedule the next tick
             System.Threading.Timer timer = new System.Threading.Timer((state) =>
             {
-                timer_Tick(null, null);
+                Timer_Tick(null, null);
             }, null, 400, Timeout.Infinite);
         }
-
+        //для элемента timer_Tick
+        public void Createtimer()
+        {
+            timer1.Tick += new EventHandler(Update); // для движения мяча
+            timer1.Interval = 50;// нужна для мячика
+        }
         private void EasyCheck(object sender, EventArgs e)
         {           
             EasyCheckedLabel.Show();
@@ -442,6 +450,24 @@ namespace WindowsFormsApp2
             HardUncheckedLabel.Show();
             selectedLevel = DifficultyLevel.Easy;
             field.GenerateBlocks(selectedLevel);
+            paused = false;
+            ballMoves = false;
+            blinking = true;
+            StartPauseButton.BackgroundImage = CroppedPauseButton;
+
+            ScoreNumberLabel.Text = "0";
+            logic.RefreshPlayerScore();
+            logic.RefreshPlayerLife();
+            LivesLabel.Text = "";
+            for (int i = 0; i < logic.GetPlayerLives(); i++)
+                LivesLabel.Text += "♥";
+            
+            field.field[field.BallY, field.BallX] = 0;
+            field.BallY = field.platformY - 2; // на строчку выше платформы расположен мяч
+            field.BallX = field.platformX + 1; // мяч размещен по середине платформы
+            field.field[field.BallY, field.BallX] = field.GetBallCode();
+            PauseMessage.Hide();
+            GoBallLabel.Show();
             Invalidate();
 
         }
@@ -455,6 +481,24 @@ namespace WindowsFormsApp2
             HardUncheckedLabel.Show();
             selectedLevel = DifficultyLevel.Medium;
             field.GenerateBlocks(selectedLevel);
+            paused = false;
+            ballMoves = false;
+            blinking = true;
+            StartPauseButton.BackgroundImage = CroppedPauseButton;
+
+            ScoreNumberLabel.Text = "0";
+            logic.RefreshPlayerScore();
+            logic.RefreshPlayerLife();
+            LivesLabel.Text = "";
+            for (int i = 0; i < logic.GetPlayerLives(); i++)
+                LivesLabel.Text += "♥";
+                      
+            field.field[field.BallY, field.BallX] = 0;
+            field.BallY = field.platformY - 2; // на строчку выше платформы расположен мяч
+            field.BallX = field.platformX + 1; // мяч размещен по середине платформы
+            field.field[field.BallY, field.BallX] = field.GetBallCode();
+            PauseMessage.Hide();
+            GoBallLabel.Show();
             Invalidate();
         }
         private void HardCheck(object sender, EventArgs e)
@@ -467,15 +511,26 @@ namespace WindowsFormsApp2
             HardUncheckedLabel.Hide();
             selectedLevel = DifficultyLevel.Hard;
             field.GenerateBlocks(selectedLevel);
-            Invalidate();
-        }
+            paused = false;
+            ballMoves = false;
+            blinking = true;
+            StartPauseButton.BackgroundImage = CroppedPauseButton;
 
-        //для элемента timer1 
-        public void Createtimer()
-        {           
-            timer1.Tick += new EventHandler(Update); // для движения мяча
-            timer1.Interval = 50;// нужна для мячика
-        }
+            ScoreNumberLabel.Text = "0";
+            logic.RefreshPlayerScore();
+            logic.RefreshPlayerLife();
+            LivesLabel.Text = "";
+            for (int i = 0; i < logic.GetPlayerLives(); i++)
+                LivesLabel.Text += "♥";
+
+            field.field[field.BallY, field.BallX] = 0;
+            field.BallY = field.platformY - 2; // на строчку выше платформы расположен мяч
+            field.BallX = field.platformX + 1; // мяч размещен по середине платформы
+            field.field[field.BallY, field.BallX] = field.GetBallCode();
+            PauseMessage.Hide();
+            GoBallLabel.Show();
+            Invalidate();
+        }    
         public void StartPauseButtonClick(object sender, EventArgs e)
         {
             if (((Label)sender).BackgroundImage == CroppedStartButton1 ) 
@@ -654,7 +709,6 @@ namespace WindowsFormsApp2
         {             
                this.Close();
         }
-
         // обрезка элементов спрайта
         private Bitmap CropSprite(Image image, Rectangle cropRectangle)
         {
@@ -777,7 +831,7 @@ namespace WindowsFormsApp2
                     field.field[field.BallY, field.BallX] = field.GetBallCode();
                     GoBallLabel.Show();
                     blinking = true;
-                    timer_Tick(null, null);
+                    Timer_Tick(null, null);
                     Invalidate();
                 }              
             }
@@ -872,11 +926,10 @@ namespace WindowsFormsApp2
             field.field[field.platformY, field.platformX + 1] = field.GetPlatformCode() * 10 + field.field[field.platformY, field.platformX];// середина
             field.field[field.platformY, field.platformX + 2] = field.GetPlatformCode() * 100 + field.field[field.platformY, field.platformX + 1];// правый конец платформы
         }
-
-        // продолжаем игру не изменяя состояние карты
+        // продолжаем игру (в случае потери жизни), не изменяя состояние карты
         public void Continue()
         {
-            timer1.Interval = 50;// нужна для мячика
+            timer1.Interval = 50;// нужен для мячика
             ScoreNumberLabel.Text = logic.GetPlayerScore().ToString();
             LivesLabel.Text = "";
             for (int i = 0; i < logic.GetPlayerLives(); i++)
@@ -896,13 +949,11 @@ namespace WindowsFormsApp2
             // запуск таймера для осуществления цикла игры
             timer1.Start();
         }
-
-        // отрисовка элементов
+        // отрисовка элементов формы
         public void OnPaint(object sender, PaintEventArgs e)
         {
             field.DrawArea(e.Graphics);// рисуем границы игрового поля
-            field.DrawMap(e.Graphics);// рисуем карту
-        }
-        
+            field.DrawMap(e.Graphics);// рисуем карту с игровыми компонентами
+        }    
     }   
 }
