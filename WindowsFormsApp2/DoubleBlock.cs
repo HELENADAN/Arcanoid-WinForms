@@ -1,16 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
+﻿
 namespace WindowsFormsApp2
 {
     internal class DoubleBlock : Block
-    {
-        public override int GetCode()
+    {   
+        // Добавляем конструктор, который вызывает конструктор родительского класса с аргументом
+        private DoubleBlock(int code) : base(code) 
         {
-            return 2;
+
         }
     }
 }

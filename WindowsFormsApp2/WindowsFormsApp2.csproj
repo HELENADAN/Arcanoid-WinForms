@@ -50,6 +50,7 @@
     <Compile Include="Block.cs" />
     <Compile Include="DifficultyLevel.cs" />
     <Compile Include="DoubleBlock.cs" />
+    <Compile Include="EmptyObj.cs" />
     <Compile Include="MainForm.cs">
       <SubType>Form</SubType>
     </Compile>

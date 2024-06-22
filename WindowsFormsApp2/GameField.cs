@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace WindowsFormsApp2
 {
@@ -14,44 +10,135 @@ namespace WindowsFormsApp2
         // карта, ее размер, двумерный массив = игровое поле
         public readonly int Width;  
         public readonly int Height;
-        public int[,] field;
+        public GameObj[,] field;
 
-        private Platform platform;
-
-        // переменные, которые отвечают за текущую позицию платформы
-        public int platformX = 0;
-        public int platformY = 0;
-        public int GetPlatformCode()
+        public EmptyObj emptyObj = new EmptyObj(); // объект для заполнения пустых клеток поля
+        
+        public EmptyObj GetEmptyObj()
         {
-            return platform.GetCode();
+            return emptyObj;
+        }
+
+        private Platform leftplatformpart;
+        private Platform centerplatformpart;
+        private Platform rightplatformpart;
+      
+        public Platform GetLeftPlatform()
+        {
+            return leftplatformpart;
+        }
+        public Platform GetCenterPlatform()
+        {
+            return centerplatformpart;
+        }
+        public Platform GetRightPlatform()
+        {
+            return rightplatformpart;
         }
 
         private Ball ball;
         
-        // переменные, которые отвечают за текущие координаты мячика на карте
-        public int BallX;
-        public int BallY;
-
+   
         // переменные, которые отвечают за направление движения мячика 
         public int dirX = 0;
         public int dirY = 0;
 
-        public int GetBallCode()
+        public Ball GetBall()
         {
-            return ball.GetCode();
+            return ball;
         }
-        private Block block = new Block();
-        private Block doubleblock = new DoubleBlock();
-        public int GetBlockCode()
+
+        private Block Leftpartblock = Block.Leftpartblock();
+        private Block Leftpartdoubleblock = Block.Leftpartdoubleblock();
+        private Block Rightpartblock = Block.Rightpartblock();
+        private Block Rightpartdoubleblock = Block.Rightpartdoubleblock();
+        public Block GetLeftpartblock()
         {
-            return block.GetCode();
+            return Leftpartblock;
         }
-        public int GetDoubleBlockCode()
+        public Block GetLeftpartdoubleblock()
         {
-            return doubleblock.GetCode();
+            return Leftpartdoubleblock;
+        }
+        public Block GetRightpartblock()
+        {
+            return Rightpartblock;
+        }
+        public Block GetRightpartdoubleblock()
+        {
+            return Rightpartdoubleblock;
+        }
+        public void SetStartBallPosition() 
+        {
+            ball.SetY(leftplatformpart.GetY() - 2); // на строчку выше платформы расположен мяч
+            ball.SetX(leftplatformpart.GetX() + 1); // мяч размещен по середине платформы
+            field[ball.GetY(),ball.GetX()] = ball;//
+        }
+
+        public void HideBall()
+        {
+            field[ball.GetY(),ball.GetX()] = emptyObj;
+        }
+
+        public void HidePlatform()
+        {
+            // очистим предыдущее место размещение платформы
+            field[leftplatformpart.GetY(),leftplatformpart.GetX()] = emptyObj;
+            field[leftplatformpart.GetY(),leftplatformpart.GetX()+1] = emptyObj;
+            field[leftplatformpart.GetY(),leftplatformpart.GetX()+2] = emptyObj;
+        }
+ 
+        public void PlatformMoveRight()
+        {
+            if (leftplatformpart.GetX() + 4 < Width - 1)
+                // сдвинем координату платформы на единичку по оси x 
+                leftplatformpart.SetX(leftplatformpart.GetX() +2);
+        }
+
+        public void PlatformMoveLeft()
+        {
+            if (leftplatformpart.GetX() > 1)
+                // сдвинем координату платформы на единичку по оси x
+                leftplatformpart.SetX(leftplatformpart.GetX()- 2);
+        }
+
+        public void UpdatePlatformCoordinates()
+        {
+            // Размещает платформу на карте с помощью специальных маркеров для разных частей платформы
+            field[leftplatformpart.GetY(),leftplatformpart.GetX()] = leftplatformpart; // левый конец платформы
+            field[leftplatformpart.GetY(),leftplatformpart.GetX()+1] = centerplatformpart;// середина
+            field[leftplatformpart.GetY(),leftplatformpart.GetX()+2] = rightplatformpart;// правый конец платформы
+        }
+
+        public void PlaceBall()
+        {
+            field[ball.GetY(),ball.GetX()] = ball;
+        }
+
+        public void ResetBallDirectory()
+        {
+            dirX = 1;
+            dirY = -1;
+        }
+
+        public void MoveBall()
+        {
+            ball.SetX(ball.GetX()+dirX);
+            ball.SetY(ball.GetY() + dirY);
+        }
+
+        public int getballx()
+        {
+            return ball.GetX();
+        }
+
+        public int getbally()
+        {
+            return ball.GetY();
         }
 
         DifficultyLevel selectedLevel = DifficultyLevel.Medium;
+
 
         // добавление сложности, смещаем все линии вниз и добавляем одну линию, добавляем блоки в зависимости от уровня сложности!
         public void AddLine()
@@ -69,8 +156,8 @@ namespace WindowsFormsApp2
                 case DifficultyLevel.Easy:
                     for (int j = 0; j < this.Width; j += 2) // так препятствие состоит из 2 частей
                         {
-                            field[0, j] = block.GetCode();
-                            field[0, j + 1] = field[0, j] + field[0, j] * 10;// для определения коллизий с мячом
+                            field[0, j] = Leftpartblock;
+                            field[0, j + 1] = Rightpartblock;// для определения коллизий с мячом
                         }                  
                     break;
                 case DifficultyLevel.Medium:
@@ -80,17 +167,21 @@ namespace WindowsFormsApp2
                     {
                         if (r.Next(1, 3) == 1)
                         {
-                            field[0, j] = block.GetCode();
+                            field[0, j] = Leftpartblock;
+                            field[0, j + 1] = Rightpartblock;
                         }
-                        else field[0, j] = doubleblock.GetCode();
-                        field[0, j + 1] = field[0, j] + field[0, j] * 10;// для определения коллизий с мячом
+                        else
+                        { 
+                           field[0, j] = Leftpartdoubleblock;
+                           field[0, j + 1] = Rightpartdoubleblock;// для определения коллизий с мячо
+                        } 
                     }
                     break;
                 case DifficultyLevel.Hard:
                     for (int j = 0; j < this.Width; j += 2) // так препятствие состоит из 2 частей
                     {
-                        field[0, j] = doubleblock.GetCode();
-                        field[0, j + 1] = field[0, j] + field[0, j] * 10;// для определения коллизий с мячом
+                        field[0, j] = Leftpartdoubleblock;
+                        field[0, j + 1] = Rightpartdoubleblock;// для определения коллизий с мячом
                     }
                     break;
             }
@@ -107,8 +198,8 @@ namespace WindowsFormsApp2
                     {
                         for (int j = 0; j < this.Width; j += 2) // так препятствие состоит из 2 частей
                         {                           
-                           field[i, j] = block.GetCode();
-                           field[i, j + 1] = field[i, j] + field[i, j] * 10;// для определения коллизий с мячом
+                           field[i, j] = Leftpartblock;
+                           field[i, j + 1] = Rightpartblock;// для определения коллизий с мячом
                         }
                     }
                     break;
@@ -121,10 +212,14 @@ namespace WindowsFormsApp2
                         {
                             if (r.Next(1, 3) == 1)
                             {
-                                field[i, j] = block.GetCode();
+                                field[i, j] = Leftpartblock;
+                                field[i, j + 1] = Rightpartblock;
                             }
-                            else field[i, j] = doubleblock.GetCode();
-                            field[i, j + 1] = field[i, j] + field[i, j] * 10;// для определения коллизий с мячом
+                            else
+                            {
+                                field[i, j] = Leftpartdoubleblock;
+                                field[i, j + 1] = Rightpartdoubleblock;// для определения коллизий с мячом
+                            }                          
                         }
                     }
                     break;
@@ -133,8 +228,8 @@ namespace WindowsFormsApp2
                     {
                         for (int j = 0; j < this.Width; j += 2) // так препятствие состоит из 2 частей
                         {
-                            field[i, j] = doubleblock.GetCode();
-                            field[i, j + 1] = field[i, j] + field[i, j] * 10;// для определения коллизий с мячом
+                            field[i, j] = Leftpartdoubleblock;
+                            field[i, j + 1] = Rightpartdoubleblock;// для определения коллизий с мячом
                         }
                     }
                     break;
@@ -143,9 +238,12 @@ namespace WindowsFormsApp2
 
         // конструктор игрового поля
         public GameField()
-        {   
-            ball = new Ball();
-            platform = new Platform();
+        {
+            ball = Ball.BallObj();
+
+            leftplatformpart = Platform.Leftpart();
+            centerplatformpart = Platform.Centerpart();
+            rightplatformpart = Platform.Rightpart();
 
             // подгрузка картинки
             TextureSet = new Bitmap("C:\\Users\\Елена\\Desktop\\Arcanoid\\WindowsFormsApp2\\img_for_w2\\arca.jpg");
@@ -153,32 +251,34 @@ namespace WindowsFormsApp2
             this.Width = 20;
             this.Height = 30;
 
-            field = new int[Height, Width];
-          
+            field = new GameObj[Height, Width];
+
             // заполняем массив карты нулями
             for (int i = 0; i < this.Height; i++)// двигается по х
             {
                 for (int j = 0; j < this.Width; j++)// двигается по у
                 {
-                    field[i, j] = 0;// заполняем двумерный массив нулями
+                    field[i, j] = emptyObj;// заполняем двумерный массив нулями
                 }
             }
 
             // расположение платформы относительно карты - по центру
 
-            platformX = (this.Width - 1) / 2;
-            platformY = this.Height - 1;
+            leftplatformpart.SetX((this.Width - 1) / 2);
+            leftplatformpart.SetY(this.Height - 1); 
 
             // место размещения платформы на карте
 
-            field[platformY, platformX] = platform.GetCode(); // левый конец платформы
-            field[platformY, platformX + 1] = platform.GetCode() * 10 + field[platformY, platformX];
-            field[platformY, platformX + 2] = platform.GetCode() * 100 + field[platformY, platformX + 1];// правый конец платформы
+            field[leftplatformpart.GetY(),leftplatformpart.GetX()] = leftplatformpart;
+            field[leftplatformpart.GetY(),leftplatformpart.GetX()+1] = centerplatformpart;
+            field[leftplatformpart.GetY(),leftplatformpart.GetX()+2] = rightplatformpart;
 
             // задаем расположение мячика
 
-            BallY = platformY - 1; // на строчку выше платформы расположен мяч
-            BallX = platformX + 1; // мяч размещен по середине платформы
+            // на строчку выше платформы расположен мяч
+            ball.SetY(leftplatformpart.GetY() - 1);
+;           // мяч размещен по середине платформы
+            ball.SetX(leftplatformpart.GetX() + 1);
 
             // реализация движения мячика
             dirX = 1;
@@ -192,25 +292,7 @@ namespace WindowsFormsApp2
             {
                 for (int j = 0; j < this.Width; j++)
                 {
-                    if (field[i, j] == platform.GetCode())
-                    {
-                        g.DrawImage(TextureSet, new Rectangle(new Point(j * 20, i * 20), new Size(90, 40)), new Rectangle(73, 236, 307, 123), GraphicsUnit.Pixel);
-                    }
-
-                    if (field[i, j] == ball.GetCode())
-                    {
-                        g.DrawImage(TextureSet, new Rectangle(new Point(j * 20, i * 20), new Size(35, 35)), new Rectangle(419, 195, 125, 125), GraphicsUnit.Pixel);
-                    }
-
-                    if (field[i, j] == doubleblock.GetCode())
-                    {
-                        g.DrawImage(TextureSet, new Rectangle(new Point(j * 20, i * 20), new Size(40, 20)), new Rectangle(82, 420, 92, 37), GraphicsUnit.Pixel);
-                    }
-
-                    if (field[i, j] == block.GetCode())
-                    {
-                        g.DrawImage(TextureSet, new Rectangle(new Point(j * 20, i * 20), new Size(40, 20)), new Rectangle(229, 420, 92, 37), GraphicsUnit.Pixel);
-                    }
+                    field[i, j].Draw(g, TextureSet, i, j);                   
                 }
             }
             

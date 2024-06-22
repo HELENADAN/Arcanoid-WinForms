@@ -1,18 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
 using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Runtime.Remoting.Messaging;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
+using Button = System.Windows.Forms.Button;
 using TextBox = System.Windows.Forms.TextBox;
 using ToolTip = System.Windows.Forms.ToolTip;
 
@@ -22,8 +13,8 @@ namespace WindowsFormsApp2
     // В этом коде создается форма с игровым полем и элементами
     public partial class MainForm : Form
     {
-        GameField field;
-        GameLogic logic;
+        GameField field = new GameField();
+        readonly GameLogic logic;
 
         private readonly Label ScoreLabel;
         private readonly Label ScoreNumberLabel;
@@ -60,9 +51,11 @@ namespace WindowsFormsApp2
         private readonly Label GoBallLabel;
         private Image Image { get => image; set => image = value; }
 
-        private string filePath = "C:\\Users\\Елена\\Desktop\\Arcanoid\\WindowsFormsApp2\\Results.txt";
+        private readonly string filePath = "C:\\Users\\Елена\\Desktop\\Arcanoid\\WindowsFormsApp2\\Results.txt";
         private int FinalPlayersScore;
-        private int[] numbersFromFile = new int[11];
+        private readonly int[] numbersFromFile = new int[11];
+        private readonly string[] namesFromFile = new string[11];
+        private string UserName = "noname";
 
         private bool blinking = false;
         private bool ballMoves = false;
@@ -76,10 +69,11 @@ namespace WindowsFormsApp2
             InitializeComponent();
             this.KeyPreview = true;
             Createtimer();
-            logic = new GameLogic();        
             field = new GameField();
+            logic = new GameLogic(field);        
+            
             field.GenerateBlocks(selectedLevel);
-
+           
             // вычисление размеров окна, которые будут подстраиваться под нашу карту
             this.Width = (field.Width + 8) * 20;
             this.Height = (field.Height + 2) * 20;
@@ -168,8 +162,6 @@ namespace WindowsFormsApp2
             toolTip_res.SetToolTip(RestartButton, "Начать заново");
 
             //////////////////// кнопки Level ///////////////////////////
-
-
             /////////////////// Easy Lvl ///////////////////////////////
             
             Rectangle CroppUncheckedButton = new Rectangle(604, 240, 35, 35);
@@ -397,12 +389,12 @@ namespace WindowsFormsApp2
             };
             GoBallLabel.Hide();
             this.Controls.Add(GoBallLabel);  // добавляем метки в форму --- в коллекцию элементов управления в форме
-                                             // Start the blinking
-           
+
             // обработчик событий для кнопок для движения платформы
-            this.KeyDown += new KeyEventHandler(InputCheck);
+            this.KeyDown += InputCheck;
+
             Timer_Tick(null, null);
-            
+
             try
             {
                 using (StreamReader reader = new StreamReader(filePath))
@@ -412,22 +404,33 @@ namespace WindowsFormsApp2
 
                     while (index < numbersFromFile.Length && (line = reader.ReadLine()) != null)
                     {
-                        if (line != "" && int.Parse(line) != 0) numbersFromFile[index] = int.Parse(line);
+                        if (line != "")
+                        {
+                            int num = int.Parse(line.Substring(line.IndexOf(" ") + 1));
+                            if (num != 0)
+                            {
+                                numbersFromFile[index] = num;
+                                namesFromFile[index] = line.Substring(0, line.IndexOf(" "));
+                            }
+                        }
                         index++;
                     }
                 }
             }
-            catch(FileNotFoundException){}           
+            catch (FileNotFoundException) {}
         }
 
         //для элемента timer1 
         public void Timer_Tick(object sender, EventArgs e)
         {
-        if (blinking)
-        {
-            // Toggle the label visibility
-            GoBallLabel.Visible = !GoBallLabel.Visible;
-        }
+            if (blinking)
+            {
+                // Switch visibility of the label using Invoke to access it from the UI thread
+                GoBallLabel.Invoke((MethodInvoker)delegate {
+                    GoBallLabel.Visible = !GoBallLabel.Visible;
+                });
+            }
+
             // Schedule the next tick
             System.Threading.Timer timer = new System.Threading.Timer((state) =>
             {
@@ -462,10 +465,8 @@ namespace WindowsFormsApp2
             for (int i = 0; i < logic.GetPlayerLives(); i++)
                 LivesLabel.Text += "♥";
             
-            field.field[field.BallY, field.BallX] = 0;
-            field.BallY = field.platformY - 2; // на строчку выше платформы расположен мяч
-            field.BallX = field.platformX + 1; // мяч размещен по середине платформы
-            field.field[field.BallY, field.BallX] = field.GetBallCode();
+            field.HideBall();
+            field.SetStartBallPosition();
             PauseMessage.Hide();
             GoBallLabel.Show();
             Invalidate();
@@ -493,10 +494,8 @@ namespace WindowsFormsApp2
             for (int i = 0; i < logic.GetPlayerLives(); i++)
                 LivesLabel.Text += "♥";
                       
-            field.field[field.BallY, field.BallX] = 0;
-            field.BallY = field.platformY - 2; // на строчку выше платформы расположен мяч
-            field.BallX = field.platformX + 1; // мяч размещен по середине платформы
-            field.field[field.BallY, field.BallX] = field.GetBallCode();
+            field.HideBall();
+            field.SetStartBallPosition();
             PauseMessage.Hide();
             GoBallLabel.Show();
             Invalidate();
@@ -523,10 +522,8 @@ namespace WindowsFormsApp2
             for (int i = 0; i < logic.GetPlayerLives(); i++)
                 LivesLabel.Text += "♥";
 
-            field.field[field.BallY, field.BallX] = 0;
-            field.BallY = field.platformY - 2; // на строчку выше платформы расположен мяч
-            field.BallX = field.platformX + 1; // мяч размещен по середине платформы
-            field.field[field.BallY, field.BallX] = field.GetBallCode();
+            field.HideBall();
+            field.SetStartBallPosition();
             PauseMessage.Hide();
             GoBallLabel.Show();
             Invalidate();
@@ -544,15 +541,17 @@ namespace WindowsFormsApp2
                 blinking = true;
 
                 // задаем расположение мячика
-
-                field.BallY = field.platformY - 2; // на строчку выше платформы расположен мяч
-                field.BallX = field.platformX + 1; // мяч размещен по середине платформы
-
-                // место размещения мяча на карте
-                field.field[field.BallY, field.BallX] = field.GetBallCode();
+                field.SetStartBallPosition();
                 Invalidate();
 
-                switch (selectedLevel)
+                if (logic.GetPlayerLives() <= 0)
+                {
+                    Game_over.Hide();
+                    field.HideBall();
+                    field.SetStartBallPosition();
+                    Invalidate();
+                }
+                 switch (selectedLevel)
                 {
                     case DifficultyLevel.Easy:
                         MediumCheckedLabel.Hide();
@@ -627,80 +626,102 @@ namespace WindowsFormsApp2
         public void InformButtonClick(object sender, EventArgs e)
         {
             // Создание формы
-            Form InformForm = new Form();
-            InformForm.Text = "Об игре";
-            InformForm.Width = 700;
-            InformForm.Height = 550;
-            InformForm.AutoSize = true; // Автоматическое изменение размера формы в зависимости от содержимого
+            Form InformForm = new Form
+            {
+                Text = "Об игре",
+                Width = 700,
+                Height = 550,
+                AutoSize = true // Автоматическое изменение размера формы в зависимости от содержимого
+            };
 
-            GroupBox name = new GroupBox();
-            name.Text = "Арканоид";
-            name.Font = new Font("Times New Roman", 12, FontStyle.Bold);
-            name.Location = new System.Drawing.Point(10, 10);
-            name.Size = new System.Drawing.Size(InformForm.Width - 20, 90);
+            GroupBox name = new GroupBox
+            {
+                Text = "Арканоид",
+                Font = new Font("Times New Roman", 12, FontStyle.Bold),
+                Location = new System.Drawing.Point(10, 10),
+                Size = new System.Drawing.Size(InformForm.Width - 20, 90)
+            };
             InformForm.Controls.Add(name);
 
-            Label gamename = new Label();
-            gamename.Text = "Классическая аркадная игра, целью которой является разрушение всех блоков на экране с помощью мяча, отскакивающего от платформы, управляемой игроком.";
-            gamename.Location = new System.Drawing.Point(10, 20);
-            gamename.Font = new Font("Times New Roman", 11, FontStyle.Regular);
-            gamename.Size = new System.Drawing.Size(name.Width - 20, 90);
+            Label gamename = new Label
+            {
+                Text = "Классическая аркадная игра, целью которой является разрушение всех блоков на экране с помощью мяча, отскакивающего от платформы, управляемой игроком.",
+                Location = new System.Drawing.Point(10, 20),
+                Font = new Font("Times New Roman", 11, FontStyle.Regular),
+                Size = new System.Drawing.Size(name.Width - 20, 90)
+            };
             name.Controls.Add(gamename);
 
-            GroupBox logic = new GroupBox();
-            logic.Text = "Логика";
-            logic.Font = new Font("Times New Roman", 12, FontStyle.Bold);
-            logic.Location = new System.Drawing.Point(10, name.Bottom + 10);
-            logic.Size = new System.Drawing.Size(InformForm.Width - 20,140); 
+            GroupBox logic = new GroupBox
+            {
+                Text = "Логика",
+                Font = new Font("Times New Roman", 12, FontStyle.Bold),
+                Location = new System.Drawing.Point(10, name.Bottom + 10),
+                Size = new System.Drawing.Size(InformForm.Width - 20, 140)
+            };
             InformForm.Controls.Add(logic);
 
-            Label gameLogic = new Label();
-            gameLogic.Text = "В игре Арканоид игрок управляет платформой, которая движется горизонтально вдоль нижней части экрана. Целью игры является отбивание мяча, чтобы разрушить все блоки на экране. Мяч отскакивает от платформы и стен, а при попадании на блок разрушает его. Игрок должен предотвращать падение мяча за нижнюю границу экрана, в противном случае он потеряет одну из своих жизней.";
-            gameLogic.Location = new System.Drawing.Point(10, 20);
-            gameLogic.Size = new System.Drawing.Size(logic.Width - 20, 140);
-            gameLogic.Font = new Font("Times New Roman", 11, FontStyle.Regular);
+            Label gameLogic = new Label
+            {
+                Text = "В игре Арканоид игрок управляет платформой, которая движется горизонтально вдоль нижней части экрана. Целью игры является отбивание мяча, чтобы разрушить все блоки на экране. Мяч отскакивает от платформы и стен, а при попадании на блок разрушает его. Игрок должен предотвращать падение мяча за нижнюю границу экрана, в противном случае он потеряет одну из своих жизней.",
+                Location = new System.Drawing.Point(10, 20),
+                Size = new System.Drawing.Size(logic.Width - 20, 140),
+                Font = new Font("Times New Roman", 11, FontStyle.Regular)
+            };
             logic.Controls.Add(gameLogic);
 
-            GroupBox aboutGame = new GroupBox();
-            aboutGame.Text = "Управление";
-            aboutGame.Font = new Font("Times New Roman", 12, FontStyle.Bold);
-            aboutGame.Location = new System.Drawing.Point(10, logic.Bottom + 10);
-            aboutGame.Size = new System.Drawing.Size(InformForm.Width - 20, 60);
+            GroupBox aboutGame = new GroupBox
+            {
+                Text = "Управление",
+                Font = new Font("Times New Roman", 12, FontStyle.Bold),
+                Location = new System.Drawing.Point(10, logic.Bottom + 10),
+                Size = new System.Drawing.Size(InformForm.Width - 20, 60)
+            };
             InformForm.Controls.Add(aboutGame);
 
-            Label work = new Label();
-            work.Text = "Для управления платформой используются стрелки влево-вправо на клавиатуре.";
-            work.Location = new System.Drawing.Point(10, 20);
-            work.Size = new System.Drawing.Size(aboutGame.Width - 20, 60);
-            work.Font = new Font("Times New Roman", 11, FontStyle.Regular);
+            Label work = new Label
+            {
+                Text = "Для управления платформой используются стрелки влево-вправо на клавиатуре.",
+                Location = new System.Drawing.Point(10, 20),
+                Size = new System.Drawing.Size(aboutGame.Width - 20, 60),
+                Font = new Font("Times New Roman", 11, FontStyle.Regular)
+            };
             aboutGame.Controls.Add(work);
 
-            GroupBox Author = new GroupBox();
-            Author.Text = "Автор";
-            Author.Font = new Font("Times New Roman", 12, FontStyle.Bold);
-            Author.Location = new System.Drawing.Point(10, aboutGame.Bottom + 10);
-            Author.Size = new System.Drawing.Size(InformForm.Width - 20, 40);
+            GroupBox Author = new GroupBox
+            {
+                Text = "Автор",
+                Font = new Font("Times New Roman", 12, FontStyle.Bold),
+                Location = new System.Drawing.Point(10, aboutGame.Bottom + 10),
+                Size = new System.Drawing.Size(InformForm.Width - 20, 40)
+            };
             InformForm.Controls.Add(Author);
 
-            Label AboutAuthor = new Label();
-            AboutAuthor.Text = "студентка гр. 2-80 Данченко Е.А.";
-            AboutAuthor.Location = new System.Drawing.Point(10, 20);
-            AboutAuthor.Size = new System.Drawing.Size(Author.Width - 20, 40);
-            AboutAuthor.Font = new Font("Times New Roman", 11, FontStyle.Regular);
+            Label AboutAuthor = new Label
+            {
+                Text = "студентка гр. 2-80 Данченко Е.А.",
+                Location = new System.Drawing.Point(10, 20),
+                Size = new System.Drawing.Size(Author.Width - 20, 40),
+                Font = new Font("Times New Roman", 11, FontStyle.Regular)
+            };
             Author.Controls.Add(AboutAuthor);
 
-            GroupBox Year = new GroupBox();
-            Year.Text = "Год создания";
-            Year.Font = new Font("Times New Roman", 12, FontStyle.Bold);
-            Year.Location = new System.Drawing.Point(10, Author.Bottom + 10);
-            Year.Size = new System.Drawing.Size(InformForm.Width - 20, 40);
+            GroupBox Year = new GroupBox
+            {
+                Text = "Год создания",
+                Font = new Font("Times New Roman", 12, FontStyle.Bold),
+                Location = new System.Drawing.Point(10, Author.Bottom + 10),
+                Size = new System.Drawing.Size(InformForm.Width - 20, 40)
+            };
             InformForm.Controls.Add(Year);
 
-            Label AboutYear = new Label();
-            AboutYear.Text = "2024";
-            AboutYear.Location = new System.Drawing.Point(10, 20);
-            AboutYear.Size = new System.Drawing.Size(Year.Width - 20, 40);
-            AboutYear.Font = new Font("Times New Roman", 11, FontStyle.Regular);
+            Label AboutYear = new Label
+            {
+                Text = "2024",
+                Location = new System.Drawing.Point(10, 20),
+                Size = new System.Drawing.Size(Year.Width - 20, 40),
+                Font = new Font("Times New Roman", 11, FontStyle.Regular)
+            };
             Year.Controls.Add(AboutYear);
 
             InformForm.Show();
@@ -726,38 +747,31 @@ namespace WindowsFormsApp2
         private void InputCheck(object sender, KeyEventArgs e)
         {
             if (!paused) 
-            {
-                // какая клавиша нажата
+            {              
                 // очистим предыдущее место размещение платформы
-                field.field[field.platformY, field.platformX] = 0;
-                field.field[field.platformY, field.platformX + 1] = 0;
-                field.field[field.platformY, field.platformX + 2] = 0;
+                field.HidePlatform();
 
                 if (!ballMoves)
                 {
                     // место размещения мяча на карте
-                    field.field[field.BallY, field.BallX] = 0;
+                    field.HideBall();
                 }
 
+                // какая клавиша нажата
                 switch (e.KeyCode)
                 {   // если нажали кнопку вправо
                     case Keys.Right:
-                        if (field.platformX + 4 < field.Width - 1)
-                            // сдвинем координату платформы на единичку по оси x 
-                            field.platformX += 2;
+                        field.PlatformMoveRight();
                         break;
                     // если нажали кнопку влево
                     case Keys.Left:
-                        if (field.platformX > 1)
-                            // сдвинем координату платформы на единичку по оси x
-                            field.platformX -= 2;
+                        field.PlatformMoveLeft();
                         break;
                     //если нажали пробел
                     case Keys.Space:
                         if (!ballMoves)
                         {
                             GoBallLabel.Hide();
-                            // timer1.Start();
                             Continue();
                             blinking = false;
                             ballMoves = true;
@@ -765,18 +779,11 @@ namespace WindowsFormsApp2
                         break;
                 }
 
-                //разместить платформу с учетом новых координат
-                field.field[field.platformY, field.platformX] = field.GetPlatformCode(); // левый конец платформы
-                field.field[field.platformY, field.platformX + 1] = field.GetPlatformCode() * 10 + field.field[field.platformY, field.platformX];// середина
-                field.field[field.platformY, field.platformX + 2] = field.GetPlatformCode() * 100 + field.field[field.platformY, field.platformX + 1];// правый конец платформы
+                field.UpdatePlatformCoordinates();// Обновляет местоположение платформы на карте
 
                 if (!ballMoves)
                 {   
-                    // задаем расположение мячика
-                    field.BallX = field.platformX + 1; // мяч размещен по середине платформы
-
-                    // место размещения мяча на карте
-                    field.field[field.BallY, field.BallX] = field.GetBallCode();
+                    field.SetStartBallPosition();
                 }
                 Invalidate();
             }
@@ -785,17 +792,19 @@ namespace WindowsFormsApp2
         public void Update(object sender, EventArgs e)
         {
             HandleBottomCollision(); // Обрабатывает столкновение с нижней границей карты
-            ClearPreviousBallPosition(); // Очищает предыдущее положение мяча
-            HandleBallCollision(); // Обработка коллизий мяча
-            UpdateBallCoordinates();// Обновление координат мяча
-            UpdatePlatformCoordinates();// Обновляет местоположение платформы на карте
+            field.HideBall(); // Очищает предыдущее положение мяча
+            logic.HandleBallCollision(); // Обработка коллизий мяча
+            ScoreLabel.Text = "SCORES"; // обновим счетчик
+            ScoreNumberLabel.Text = logic.GetPlayerScore().ToString();
+            field.PlaceBall();// Обновление координат мяча
+            field.UpdatePlatformCoordinates();// Обновляет местоположение платформы на карте
             Invalidate();
         }
         private void HandleBottomCollision()
         {
             // столкновение с нижней частью границы ---> Игра начинается заново, если мяч коснулся нижней границы
 
-            if (field.BallY + field.dirY > field.Height - 1)
+            if (logic.NeedHandleBottomCollision())
             {
                 logic.DamagePlayer();
                 ballMoves = false;
@@ -805,46 +814,98 @@ namespace WindowsFormsApp2
                 {
                     paused = true;
                     FinalPlayersScore = logic.GetPlayerScore();
-                    AddResults(FinalPlayersScore);
+
                     ScoreNumberLabel.Text = "0";
                     logic.RefreshPlayerScore();
                     LivesLabel.Text = "×_×";
-                    
+
                     StartPauseButton.BackgroundImage = CroppedStartButton1;
                     field = new GameField();
                     Game_over.Show();
+
+                    // форма для имени игрока
+
+                    Form UserForm = new Form
+                    {
+                        Text = "Сохранение результата",
+                        Width = 350,
+                        Height = 200,
+                        AutoSize = true
+                    };
+
+
+                    TextBox Usname = new TextBox
+                    {
+                        Text = "Имя",
+                        Font = new Font("Times New Roman", 12, FontStyle.Bold),
+                        Location = new System.Drawing.Point(20, 70),
+                        Size = new System.Drawing.Size(150, 30)
+                    };
+                    UserForm.Controls.Add(Usname);
+
+                    GroupBox name = new GroupBox
+                    {
+                        Text = "Введите Ваше Имя:",
+                        Font = new Font("Times New Roman", 12, FontStyle.Bold),
+                        Location = new System.Drawing.Point(10, 50),
+                        Size = new System.Drawing.Size(200, 30)
+                    };
+                    UserForm.Controls.Add(name);
+
+                    // Создаем кнопку "Сохранить"
+                    Button saveButton = new Button
+                    {
+                        Text = "Сохранить",
+                        Location = new System.Drawing.Point(200, 200)
+                    };
+                    UserForm.Controls.Add(saveButton);
+                   
+                    UserForm.Show();
+                    saveButton.Click += (object sender, EventArgs e) => SaveButton_Click(sender, e, UserForm, Usname);
+
+                    StartPauseButton.Hide();
+                    RestartButton.Location = new Point((field.Width) * 20 + 40, 125);
+                    ResultButton.Location = new Point((field.Width) * 20 + 5, 300);
+                    InformButton.Location = new Point((field.Width) * 20 + 95, 300);
+                    ExitButton.Location = new Point((field.Width) * 20 + 45, 400);
                 }
                 else
                 {
                     LivesLabel.Text = "";
                     for (int i = 0; i < logic.GetPlayerLives(); i++)
-                        LivesLabel.Text += "♥";
+                        LivesLabel.Text += "♥️";
 
                     // место размещения мяча на карте
-                    field.field[field.BallY, field.BallX] = 0;
+                    field.HideBall();
 
                     // задаем расположение мячика
-                    field.BallX = field.platformX + 1; // мяч размещен по середине платформы
-                    field.BallY = field.platformY - 1;
-
-                    // место размещения мяча на карте
-                    field.field[field.BallY, field.BallX] = field.GetBallCode();
+                    field.SetStartBallPosition();
                     GoBallLabel.Show();
                     blinking = true;
                     Timer_Tick(null, null);
                     Invalidate();
-                }              
+                }
             }
         }
-        public void AddResults(int FinalPlayersScore)
+        private void SaveButton_Click(object sender, EventArgs e, Form UserForm, TextBox Usname)
         {
+            UserName = Usname.Text;
+            AddResults(FinalPlayersScore, UserName);
+            UserForm.Close();
+        }
+
+        public void AddResults(int FinalPlayersScore, string FinalPlayersName)
+        {
+           
             numbersFromFile[numbersFromFile.Length - 1] = FinalPlayersScore;
+            namesFromFile[namesFromFile.Length - 1] = FinalPlayersName;
 
             // Добавление полученных очков в массив после сравнения (сортировка вставкой)
 
             for (int i = 1; i < numbersFromFile.Length; i++) // Начинаем с индекса 1 (так как элемент с индексом 0 считается уже отсортированным). Проходим по массиву слева направо.
             {
                 int key = numbersFromFile[i]; // Текущий элемент, который нужно вставить в правильное место
+                string keyName = namesFromFile[i];
 
                 int j = i - 1;// Индекс элемента, перед которым нужно вставить текущий элемент
 
@@ -852,80 +913,58 @@ namespace WindowsFormsApp2
                 while (j >= 0 && numbersFromFile[j] < key)
                 {
                     numbersFromFile[j + 1] = numbersFromFile[j]; //  Обмен местами текущего элемента и предыдущего элемента.
+                    namesFromFile[j + 1] = namesFromFile[j];
                     j--;
                 }
 
                 numbersFromFile[j + 1] = key; // Вставка текущего элемента на его правильное место после того, как он был сдвинут влево.
+                namesFromFile[j + 1] = keyName;
             }
 
             // Запись массива обратно в файл
             using (StreamWriter sw = new StreamWriter(filePath, false))
-            {   
+            {
                 for (int i = 0; i < numbersFromFile.Length - 1; i++)
                 {
-                    sw.WriteLine(numbersFromFile[i]);
+                    if (namesFromFile[i] == null || namesFromFile[i].Length == 0) namesFromFile[i] = "unknown";
+                    sw.WriteLine(namesFromFile[i] + " " + numbersFromFile[i]);
                 }
-            }
-
+            }        
         }
         private void ResultButtonClick(object sender, EventArgs e)
         {
             // Создание формы
-            Form ResultsForm = new Form();
-            ResultsForm.Text ="Лучшие результаты";
+            Form ResultsForm = new Form
+            {
+                Text = "Лучшие результаты"
+            };
 
             Label[] labels = new Label[10];
 
             for (int i = 0; i < labels.Length; i++)
             {
-                labels[i] = new Label();
-                labels[i].Location = new Point(ResultsForm.Width / 2, 25*i);
+                labels[i] = new Label
+                {
+                    Location = new Point(ResultsForm.Width / 2, 25 * i)
+                };
                 ResultsForm.Controls.Add(labels[i]);
             }
             bool resultWas = false;
             for (int i = 0; i < numbersFromFile.Length - 1; i++)
             {
                 if (numbersFromFile[i] != 0)
-                { 
-                    labels[i].Text = numbersFromFile[i].ToString();
+                {
+                    labels[i].Text = namesFromFile[i] + " " + numbersFromFile[i].ToString();
                     resultWas = true;
                 }
-                
+
             }
-            if(!resultWas) labels[0].Text = "0";
+            if (!resultWas) labels[0].Text = "0";
             // Вывод формы
             ResultsForm.Show();
-        } 
-        private void ClearPreviousBallPosition()
-        {
-            field.field[field.BallY, field.BallX] = 0;
         }
-        private void HandleBallCollision()
-        {
-            if (!logic.IsCollade(field, ScoreLabel, ScoreNumberLabel))
-            {
-                // меняем координаты
-                field.BallX += field.dirX;
-            }
-            if (!logic.IsCollade(field, ScoreLabel, ScoreNumberLabel))
-            {
-                // меняем координаты
-                field.BallY += field.dirY;
-            }
-        }
-        private void UpdateBallCoordinates()
-        {
-            // Обновляет координаты мяча на карте
-            // задаем новое место
-            field.field[field.BallY, field.BallX] = field.GetBallCode();
-        }
-        private void UpdatePlatformCoordinates()
-        {
-            // Размещает платформу на карте с помощью специальных маркеров для разных частей платформы
-            field.field[field.platformY, field.platformX] = field.GetPlatformCode(); // левый конец платформы
-            field.field[field.platformY, field.platformX + 1] = field.GetPlatformCode() * 10 + field.field[field.platformY, field.platformX];// середина
-            field.field[field.platformY, field.platformX + 2] = field.GetPlatformCode() * 100 + field.field[field.platformY, field.platformX + 1];// правый конец платформы
-        }
+
+        
         // продолжаем игру (в случае потери жизни), не изменяя состояние карты
         public void Continue()
         {
@@ -937,14 +976,11 @@ namespace WindowsFormsApp2
 
             // место размещения платформы на карте
 
-            field.field[field.platformY, field.platformX] = field.GetPlatformCode(); // левый конец платформы
-            field.field[field.platformY, field.platformX + 1] = field.GetPlatformCode() * 10 + field.field[field.platformY, field.platformX];// середина
-            field.field[field.platformY, field.platformX + 2] = field.GetPlatformCode() * 100 + field.field[field.platformY, field.platformX + 1];// правый конец платформы
-            field.field[field.BallY, field.BallX] = 0;
+            field.UpdatePlatformCoordinates();
+            field.HideBall();
 
             // реализация движения мячика
-            field.dirX = 1;
-            field.dirY = -1;
+            field.ResetBallDirectory();
 
             // запуск таймера для осуществления цикла игры
             timer1.Start();
@@ -953,7 +989,7 @@ namespace WindowsFormsApp2
         public void OnPaint(object sender, PaintEventArgs e)
         {
             field.DrawArea(e.Graphics);// рисуем границы игрового поля
-            field.DrawMap(e.Graphics);// рисуем карту с игровыми компонентами
+            field.DrawMap(e.Graphics);// рисуем карту с игровыми компонентами    
         }    
     }   
 }
